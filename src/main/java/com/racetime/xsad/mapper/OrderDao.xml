@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.racetime.xsad.dao.OrderDao">
+
+    <select id='getChannelAndPrice' resultType="java.util.Map">
+        SELECT
+            ap.price AS price,
+            ac.id AS channel_id
+        FROM
+            `ad_position` ap,
+            ad_channel ac,
+            ad_app aa
+        WHERE
+            aa.channel_id = ac.id
+        AND ap.app_id = aa.id
+        AND aa.channel_id = ac.id
+        AND ap.id = 12
+    </select>
+
+    <select id="getPvUv" resultType="java.util.Map">
+    SELECT
+        SUM(pv * device_num) AS pv,
+		SUM(uv * device_num) AS uv
+    FROM
+        `pmp_resource` pmpr,
+        pmp_resouce_stock pmprs
+    WHERE
+        pmpr.id = pmprs.pmp_resouce_id
+    AND pmpr.id = 1
+    AND mdate IN ('2018-04-18', '2018-04-19')
+    AND pmpr.id IN (1)
+    </select>
+</mapper>
