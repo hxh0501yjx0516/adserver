@@ -6,8 +6,6 @@ public class OrderDetail extends Paramaters{
 	
 	private String order_type = "";
 
-	private String order_name = "";
-	
 	private String adslot_name = "";
 	
 	private String city_name = "";
@@ -36,14 +34,6 @@ public class OrderDetail extends Paramaters{
 
 	public void setOrder_detail_id(String order_detail_id) {
 		this.order_detail_id = order_detail_id;
-	}
-
-	public String getOrder_name() {
-		return order_name;
-	}
-
-	public void setOrder_name(String order_name) {
-		this.order_name = order_name;
 	}
 
 	public String getAdslot_name() {

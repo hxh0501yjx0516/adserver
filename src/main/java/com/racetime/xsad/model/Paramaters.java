@@ -4,6 +4,8 @@ public class Paramaters {
 
 	private Long order_id;
 	
+	private String order_name = "";
+	
 	private Integer adslot_id;
 	
 	private String city_code;
@@ -32,6 +34,14 @@ public class Paramaters {
 		this.order_id = order_id;
 	}
 
+	public String getOrder_name() {
+		return order_name;
+	}
+
+	public void setOrder_name(String order_name) {
+		this.order_name = order_name;
+	}
+	
 	public Integer getAdslot_id() {
 		return adslot_id;
 	}

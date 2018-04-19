@@ -62,27 +62,30 @@
 	    	ON o.adslot_id = w.thrid_position_id 
 		<where>
 			1=1
-			<if test="order_id != null">
+			<if test="order_id != null and order_id != ''">
 				and o.order_id = #{order_id}
 			</if>
-			<if test="adslot_id != null">
+			<if test="order_name != null and order_name != ''">
+				and p.order_name like CONCAT('%',#{order_name},'%')
+			</if>
+			<if test="adslot_id != null and adslot_id != ''">
 				and o.adslot_id = #{adslot_id}
 			</if>
-			<if test="city_code != null">
+			<if test="city_code != null and city_code != ''">
 				and o.city_code = #{city_code}
 			</if>
-			<if test="scene_id != null">
+			<if test="scene_id != null and scene_id != ''">
 				and o.scene_id = #{scene_id}
 			</if>
-			<if test="sdate != null">
+			<if test="sdate != null and sdate != ''">
 				<![CDATA[and o.put_time  >= #{sdate}]]>
 			</if>
-			<if test="edate != null">
+			<if test="edate != null and edate != ''">
 				<![CDATA[and o.put_time  <= #{edate}]]>
 			</if>
 		</where>	
 		 order by put_time desc
-		 	<if test="startSize != null and pageSize != null">
+		 	<if test="startSize != null and pageSize != null and startSize != '' and pageSize != ''">
 				limit #{startSize},#{pageSize} 
 			</if>
 	</select>
@@ -107,22 +110,25 @@
 	    	ON o.adslot_id = w.thrid_position_id 
 		<where>
 			1=1
-			<if test="order_id != null">
+			<if test="order_id != null and order_id != ''">
 				and o.order_id = #{order_id}
 			</if>
-			<if test="adslot_id != null">
+			<if test="order_name != null and order_name != ''">
+				and p.order_name like CONCAT('%',#{order_name},'%')
+			</if>
+			<if test="adslot_id != null and adslot_id != ''">
 				and o.adslot_id = #{adslot_id}
 			</if>
-			<if test="city_code != null">
+			<if test="city_code != null and city_code != ''">
 				and o.city_code = #{city_code}
 			</if>
-			<if test="scene_id != null">
+			<if test="scene_id != null and scene_id != ''">
 				and o.scene_id = #{scene_id}
 			</if>
-			<if test="sdate != null">
+			<if test="sdate != null and sdate != ''">
 				<![CDATA[and o.put_time  >= #{sdate}]]>
 			</if>
-			<if test="edate != null">
+			<if test="edate != null and edate != ''">
 				<![CDATA[and o.put_time  <= #{edate}]]>
 			</if>
 		</where>	
