@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.racetime.xsad.dao.OrderDetailDao">
+
+	<resultMap id="orderDetailMap" type="com.racetime.xsad.model.OrderDetail">
+		<id column="order_detail_id" property="order_detail_id" jdbcType="VARCHAR" />
+		<result column="order_id" property="order_id" jdbcType="INTEGER" />
+		<result column="order_type" property="order_type" jdbcType="VARCHAR" />
+		<result column="order_name" property="order_name" jdbcType="VARCHAR" />
+		<result column="adslot_id" property="adslot_id" jdbcType="INTEGER" />
+		<result column="adslot_name" property="adslot_name" jdbcType="VARCHAR" />
+		<result column="city_code" property="city_code" jdbcType="VARCHAR" />
+		<result column="scene_id" property="scene_id" jdbcType="INTEGER" />
+		<result column="estimate_pv" property="estimate_pv" jdbcType="INTEGER" />
+		<result column="estimate_uv" property="estimate_uv" jdbcType="INTEGER" />
+		<result column="reality_pv" property="reality_pv" jdbcType="INTEGER" />
+		<result column="reality_uv" property="reality_uv" jdbcType="INTEGER" />
+		<result column="monitor_url" property="monitor_url" jdbcType="VARCHAR" />
+		<result column="put_time" property="put_time" jdbcType="VARCHAR" />
+		<result column="city_name" property="city_name" jdbcType="VARCHAR" />
+		<result column="scene_name" property="scene_name" jdbcType="VARCHAR" />
+		<result column="channel_id" property="channel_id" jdbcType="INTEGER" />
+		<result column="channel_name" property="channel_name" jdbcType="VARCHAR" />
+		<result column="customer_name" property="customer_name" jdbcType="VARCHAR" />
+	</resultMap>
+	
+	
+	<select id="getOrderDetail" parameterType="com.racetime.xsad.model.Paramaters" resultMap="orderDetailMap">
+		SELECT 
+		  o.order_detail_id,
+		  o.order_id,
+		  p.order_type,
+		  p.order_name,
+		  o.adslot_id,
+		  w.name adslot_name,
+		  o.city_code,
+		  a.ka_area city_name,
+		  o.scene_id,
+		  s.name scene_name,
+		  p.ad_channel_id channel_id,
+		  c.name channel_name,
+		  t.name customer_name,
+		  o.estimate_pv,
+		  o.estimate_uv,
+		  o.reality_pv,
+		  o.reality_uv,
+		  o.monitor_url,
+		  o.put_time
+		FROM
+		  pmp_order_detail o 
+		  LEFT JOIN scene s 
+		    ON o.scene_id = s.id 
+		  LEFT JOIN t_area a 
+		    ON o.city_code = a.ka_id
+		  LEFT JOIN pmp_orders p 
+		    ON o.order_id = p.orderid 
+		  LEFT JOIN ad_channel c 
+		    ON p.ad_channel_id = c.id 
+		  LEFT JOIN ad_customer t 
+		    ON p.ad_customer_id = t.id 
+	    LEFT JOIN ad_position w 
+	    	ON o.adslot_id = w.thrid_position_id 
+		<where>
+			1=1
+			<if test="order_id != null">
+				and o.order_id = #{order_id}
+			</if>
+			<if test="adslot_id != null">
+				and o.adslot_id = #{adslot_id}
+			</if>
+			<if test="city_code != null">
+				and o.city_code = #{city_code}
+			</if>
+			<if test="scene_id != null">
+				and o.scene_id = #{scene_id}
+			</if>
+			<if test="sdate != null">
+				<![CDATA[and o.put_time  >= #{sdate}]]>
+			</if>
+			<if test="edate != null">
+				<![CDATA[and o.put_time  <= #{edate}]]>
+			</if>
+		</where>	
+		 order by put_time desc
+		 	<if test="startSize != null and pageSize != null">
+				limit #{startSize},#{pageSize} 
+			</if>
+	</select>
+
+
+	<select id="getTotalNum" parameterType="com.racetime.xsad.model.Paramaters" resultType="java.lang.Integer">
+		SELECT 
+		  count(o.order_detail_id)
+		FROM
+		  pmp_order_detail o 
+		  LEFT JOIN scene s 
+		    ON o.scene_id = s.id 
+		  LEFT JOIN t_area a 
+		    ON o.city_code = a.ka_id
+		  LEFT JOIN pmp_orders p 
+		    ON o.order_id = p.orderid 
+		  LEFT JOIN ad_channel c 
+		    ON p.ad_channel_id = c.id 
+		  LEFT JOIN ad_customer t 
+		    ON p.ad_customer_id = t.id 
+	      LEFT JOIN ad_position w 
+	    	ON o.adslot_id = w.thrid_position_id 
+		<where>
+			1=1
+			<if test="order_id != null">
+				and o.order_id = #{order_id}
+			</if>
+			<if test="adslot_id != null">
+				and o.adslot_id = #{adslot_id}
+			</if>
+			<if test="city_code != null">
+				and o.city_code = #{city_code}
+			</if>
+			<if test="scene_id != null">
+				and o.scene_id = #{scene_id}
+			</if>
+			<if test="sdate != null">
+				<![CDATA[and o.put_time  >= #{sdate}]]>
+			</if>
+			<if test="edate != null">
+				<![CDATA[and o.put_time  <= #{edate}]]>
+			</if>
+		</where>	
+	</select>
+</mapper>
