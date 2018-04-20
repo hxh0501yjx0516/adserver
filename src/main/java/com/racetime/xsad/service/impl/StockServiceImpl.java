@@ -101,8 +101,7 @@ public class StockServiceImpl implements StockService{
 				}else{
 					appInfo.put("lock", 0);
 					appInfo.put("reserve", 0);
-					appInfo.put("app_id", 0);
-					appInfo.put("remain", 0);
+					appInfo.put("remain", app_info.get(i).get("total"));
 				}
 				json.add(appInfo);
 			}

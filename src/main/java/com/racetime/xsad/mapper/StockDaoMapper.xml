@@ -81,7 +81,7 @@
    <select id="getAllAppStock"  resultType="Map">
  	select t.ssp_app_id as app_id ,sum(t1.stock)as total from pmp_resource t, pmp_resource_stock t1 
 	where t.id = t1.pmp_resource_id 
-	GROUP BY t.id,t.ssp_app_id   
+	GROUP BY t.ssp_app_id   
    </select>
    
    <!--修改库存  -->
