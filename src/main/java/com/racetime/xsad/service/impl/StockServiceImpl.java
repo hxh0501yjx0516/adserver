@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.google.gson.Gson;
 import com.racetime.xsad.dao.StockDaoMapper;
 import com.racetime.xsad.model.PmpResource;
+import com.racetime.xsad.model.ResponseJson;
 import com.racetime.xsad.service.StockService;
 
 /**
@@ -109,19 +110,40 @@ public class StockServiceImpl implements StockService{
 		}else{
 			return "0";
 		}
-		System.out.println(new Gson().toJson(json));
+		//System.out.println(new Gson().toJson(json));
 		return new Gson().toJson(json);
 	}
 
 	@Override
 	@Transactional
-	public int updatePmpResouceStock(String ids, String stock) {
-		List<String> paramIds = new ArrayList<>();
+	public ResponseJson updatePmpResouceStock(String ids, String stock) {
+		ResponseJson json = new ResponseJson();
+		int k = 0;
+		List<String> pmpResourceIds = Arrays.asList(ids.split(","));
 		Map<String,Object> param = new HashMap<>();
-		List<String> pmpResourceIds = Arrays.asList(ids.split("-"));
 		param.put("list",pmpResourceIds);
 		param.put("stock", stock);
-		List<Map<String,Object>> resouceDateInfo = stockDaoMapper.getPmpResouceDatas(param);
+		List<Integer> listIds = validatePmpResouceStock(param);
+		//string.Join(",", list.ToArray());
+		//验证是否有超过设备
+		if(listIds.size()>0){
+			json.setCode(300);
+			String str = "";
+			for (int i = 0; i < listIds.size(); i++) {
+				str += listIds.get(i)+",";
+			}
+			json.setData(str.substring(0,str.length()-1));
+		}else{
+			k = stockDaoMapper.updatePmpResouceStock(param);
+			if(k >0){
+				json.setCode(200);
+			}else{
+				json.setCode(500);
+			}
+			json.setData("");
+		}
+		
+		/*List<Map<String,Object>> resouceDateInfo = stockDaoMapper.getPmpResouceDatas(param);
 		for (int i = 0; i < resouceDateInfo.size(); i++) {
 			//获取该资源组ID和日期
 			Map<String,Object> orderInfo = stockDaoMapper.getOrderInfo(resouceDateInfo.get(i).get("pmp_resource_id").toString());
@@ -134,8 +156,11 @@ public class StockServiceImpl implements StockService{
 				long start_time = Long.valueOf(orderInfo.get("start_time").toString().replaceAll("-",""));
 				if(datetime>= start_time && datetime<=end_time && Integer.parseInt(stock) > total){
 					paramIds.add(resouceDateInfo.get(i).get("pmp_resource_stock_id").toString());
+				}else if(datetime>= start_time && datetime<=end_time && Integer.parseInt(stock) < total){
+					result.add(resouceDateInfo.get(i).get("pmp_resource_stock_id").toString());
 				}
 			}else{
+				
 				paramIds.add(resouceDateInfo.get(i).get("pmp_resource_stock_id").toString());
 			}
 		}
@@ -143,10 +168,42 @@ public class StockServiceImpl implements StockService{
 			Map<String,Object> updateParam = new HashMap<>();
 			updateParam.put("list", paramIds);
 			updateParam.put("stock", stock);
-			return stockDaoMapper.updatePmpResouceStock(updateParam);
-		}
+			k = stockDaoMapper.updatePmpResouceStock(updateParam);
+		}*/
 		//System.out.println(k);
-		return 0;
+		return json;
 	}
+	/**
+	 * 
+	 * @param stock //前端库存
+	 * @param param //
+	 * @return
+	 */
+	//验证是该资源组是否满足不超过库存使用量返回资源ID
+	public List<Integer> validatePmpResouceStock(Map<String,Object> param){
+		int stock = Integer.parseInt(param.get("stock").toString());
+		List<Integer> ids  = new ArrayList<>();
+		List<Map<String,Object>> resouceDateInfo = stockDaoMapper.getPmpResouceDatas(param);
+		for (int i = 0; i < resouceDateInfo.size(); i++) {
+			//获取该资源组ID和日期
+			Map<String,Object> orderInfo = stockDaoMapper.getOrderInfo(resouceDateInfo.get(i).get("pmp_resource_id").toString());
+			if(orderInfo != null){
+				//该资源组投放总使用数
+				int total = Integer.parseInt(orderInfo.get("stock").toString());
+				long datetime = Long.valueOf(resouceDateInfo.get(i).get("mdate").toString().replaceAll("-",""));
+				//该资源组投放日期
+				long end_time = Long.valueOf(orderInfo.get("end_time").toString().replaceAll("-",""));
+				long start_time = Long.valueOf(orderInfo.get("start_time").toString().replaceAll("-",""));
+				if(datetime>= start_time && datetime<=end_time && stock < total){
+					//return true;
+					ids.add(Integer.parseInt(resouceDateInfo.get(i).get("pmp_resource_stock_id").toString()));
+				}
+			}
+		}
+		return ids;
+	}
+	
+	
+	
 
 }

@@ -9,6 +9,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.google.gson.Gson;
+import com.racetime.xsad.model.ResponseJson;
 import com.racetime.xsad.service.StockService;
 
 /**
@@ -58,14 +60,16 @@ public class StockController {
 	@ResponseBody
 	@RequestMapping("/updateStock")
 	public String updateStock(String ids,String stock){
+		ResponseJson json  = new ResponseJson();
+		
 		if(ids == null || ids.equals("")||stock == null || stock.equals("")){
-			return "FAIL";
+			json.setCode(400);
+			json.setMsg("");
+			json.setData("");
+			return new Gson().toJson(json);
 		}
-		int i = stockService.updatePmpResouceStock(ids, stock);
-		if(i > 0){
-			return "SCUCESS";
-		}
-		return "FAIL";
+		json = stockService.updatePmpResouceStock(ids, stock);
+		return new Gson().toJson(json) ;
 		
 	}
 	
