@@ -20,7 +20,7 @@
     <select id="getPvUv" resultType="java.util.Map">
             SELECT
                 SUM(
-                    pmpr.pv * pmpr.device_num * pmprs.stock
+                    pmpr.pv * pmpr.device_num *${num}
                 ) AS pv,
                 SUM(uv * device_num) AS uv
             FROM

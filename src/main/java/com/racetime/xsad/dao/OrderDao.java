@@ -1,5 +1,6 @@
 package com.racetime.xsad.dao;
 
+import com.sun.org.glassfish.external.probe.provider.annotations.ProbeParam;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -27,7 +28,7 @@ public interface OrderDao {
      * @param list
      * @return
      */
-    Map<String, Object> getPvUv(@Param("list") List<String> list);
+    Map<String, Object> getPvUv(@Param("list") List<String> list, @Param("num") int num);
 
     /**
      * 已有订单
@@ -58,5 +59,5 @@ public interface OrderDao {
     /**
      * 插入子订单
      */
-    void insertPmp_order_detail(@Param("list") List<Map<String, Object>> list,@Param("orderid") String orderId);
+    void insertPmp_order_detail(@Param("list") List<Map<String, Object>> list, @Param("orderid") String orderId);
 }

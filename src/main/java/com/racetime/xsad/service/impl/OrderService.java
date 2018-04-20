@@ -59,7 +59,7 @@ public class OrderService implements IOrderService {
         for (String str : details) {
             detaillist.add(str);
         }
-        Map<String, Object> pvuvmap = orderDao.getPvUv(detaillist);
+        Map<String, Object> pvuvmap = orderDao.getPvUv(detaillist,Integer.parseInt(orderMap.get("num").toString()));
         int pv = Integer.parseInt(pvuvmap.get("pv").toString());
         int uv = Integer.parseInt(pvuvmap.get("uv").toString());
 
