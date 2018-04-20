@@ -24,9 +24,39 @@ public interface OrderDao {
     /**
      * 查询pv,uv
      *
-     * @param date
-     * @param resourceId
+     * @param list
      * @return
      */
-    Map<String, Object> getPvUv(@Param("ad_posttion_id") List<String> date, @Param("pmp_resource_id") String resourceId);
+    Map<String, Object> getPvUv(@Param("list") List<String> list);
+
+    /**
+     * 已有订单
+     *
+     * @return
+     */
+    List<Map<String, Object>> getExistingOrder();
+
+    /**
+     * 获取所有库存
+     *
+     * @return
+     */
+    List<Map<String, Object>> getPmp_Resource();
+
+    /**
+     * 插入订单库
+     *
+     * @param orderMap
+     */
+    void InsertOrder(@Param("map") Map<String, Object> orderMap);
+
+    /**
+     * 查询库存
+     */
+    List<Map<String, Object>> getResource(@Param("list") List<String> list);
+
+    /**
+     * 插入子订单
+     */
+    void insertPmp_order_detail(@Param("list") List<Map<String, Object>> list,@Param("orderid") String orderId);
 }
