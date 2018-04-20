@@ -1,13 +1,8 @@
 package com.racetime.xsad.controller;
 
-import com.alibaba.druid.support.json.JSONUtils;
 import com.racetime.xsad.service.IOrderService;
-import com.sun.org.glassfish.external.probe.provider.annotations.ProbeParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author hu_xuanhua_hua
@@ -29,11 +24,10 @@ public class OrderController {
      * @param order_name
      * @return
      */
-    @RequestMapping(value = "/getNum",method = { RequestMethod.POST, RequestMethod.GET })
+    @PostMapping(value = "/getNum")
     public String getNum(String order_name) {
 
-        System.err.println("========"+order_name);
-//        return order_name;
+        System.err.println("========" + order_name);
         return orderService.getNum(order_name);
     }
 
@@ -46,7 +40,7 @@ public class OrderController {
      */
     @PostMapping(value = "/generatingOrder")
     public String generatingOrder(String order_name) {
-        System.err.println("========"+order_name);
+        System.err.println("========" + order_name);
 
         return orderService.generatingOrder(order_name);
     }

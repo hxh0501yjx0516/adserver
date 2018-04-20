@@ -14,7 +14,7 @@
             aa.channel_id = ac.id
         AND ap.app_id = aa.id
         AND aa.channel_id = ac.id
-        AND ap.id = 12
+        AND ap.thrid_position_id = #{ad_posttion_id}
     </select>
 
     <select id="getPvUv" resultType="java.util.Map">
