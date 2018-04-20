@@ -2,11 +2,9 @@ package com.racetime.xsad.controller;
 
 import com.alibaba.druid.support.json.JSONUtils;
 import com.racetime.xsad.service.IOrderService;
+import com.sun.org.glassfish.external.probe.provider.annotations.ProbeParam;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,15 +29,11 @@ public class OrderController {
      * @param order_name
      * @return
      */
-    @PostMapping(value = "/getNum")
+    @RequestMapping(value = "/getNum",method = { RequestMethod.POST, RequestMethod.GET })
     public String getNum(String order_name) {
 
-        Map<String, String> map = new HashMap<>();
-        map.put("pv", "1");
-        map.put("uv", "1");
-        map.put("price", "1");
-        Map<String, Map> mapput = new HashMap<>();
-        mapput.put("num", map);
+        System.err.println("========"+order_name);
+//        return order_name;
         return orderService.getNum(order_name);
     }
 
@@ -52,8 +46,8 @@ public class OrderController {
      */
     @PostMapping(value = "/generatingOrder")
     public String generatingOrder(String order_name) {
-        Map<String, String> map = new HashMap<>();
-        map.put("success", "true");
-        return JSONUtils.toJSONString(map);
+        System.err.println("========"+order_name);
+
+        return orderService.generatingOrder(order_name);
     }
 }

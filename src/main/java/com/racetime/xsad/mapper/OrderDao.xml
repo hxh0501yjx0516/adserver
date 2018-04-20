@@ -18,16 +18,131 @@
     </select>
 
     <select id="getPvUv" resultType="java.util.Map">
-    SELECT
-        SUM(pv * device_num) AS pv,
-		SUM(uv * device_num) AS uv
-    FROM
-        `pmp_resource` pmpr,
-        pmp_resouce_stock pmprs
-    WHERE
-        pmpr.id = pmprs.pmp_resouce_id
-    AND pmpr.id = 1
-    AND mdate IN ('2018-04-18', '2018-04-19')
-    AND pmpr.id IN (1)
+            SELECT
+                SUM(
+                    pmpr.pv * pmpr.device_num * pmprs.stock
+                ) AS pv,
+                SUM(uv * device_num) AS uv
+            FROM
+                `pmp_resource` pmpr,
+                pmp_resouce_stock pmprs
+            WHERE
+                pmpr.id = pmprs.pmp_resouce_id
+            AND pmprs.id IN
+        <foreach item="item" index="index" collection="list" open="("
+                 separator="," close=")">
+            #{item}
+        </foreach>
     </select>
+    <select id="getExistingOrder" resultType="java.util.Map">
+            SELECT
+                SUM(pmpo.num) AS num,
+                pmpod.pmp_resouce_stock_id AS id
+            FROM
+                `pmp_orders` pmpo,
+                pmp_order_detail pmpod
+            WHERE
+                pmpo.orderid = pmpod.order_id
+            AND pmpo.order_type IN (1, 2)
+            GROUP BY
+                pmpod.pmp_resouce_stock_id,
+                pmpod.put_time
+    </select>
+    <select id="getPmp_Resource" resultType="java.util.Map">
+            SELECT
+                pmprs.stock AS num,
+                pmprs.id AS  id
+            FROM
+                `pmp_resource` pmpr,
+                pmp_resouce_stock pmprs
+            WHERE
+                pmpr.id = pmprs.pmp_resouce_id
+
+    </select>
+    <insert id="InsertOrder">
+        INSERT INTO pmp_orders (
+            orderid,
+            pv,
+            uv,
+            ad_app_id,
+            ad_position_id,
+            order_name,
+            ad_customer_id,
+            num,
+            money,
+            material_id,
+            start_time,
+            end_time,
+            ad_channel_id,
+            scene_id,
+            region_id,
+             order_type,
+            createtime
+        )
+        VALUES
+            (
+                #{map.orderId},
+                #{map.pv},
+                #{map.uv},
+                #{map.ad_app_id},
+                #{map.ad_position_id},
+                #{map.order_name},
+                #{map.ad_customer_id},
+                #{map.num},
+                #{map.money},
+                #{map.material_id},
+                #{map.sdate},
+                #{map.sdate},
+                #{map.ad_channel_id},
+                #{map.scene_id},
+                #{map.city_code},
+                1,
+                now()
+            )
+    </insert>
+    <select id="getResource" resultType="java.util.Map">
+
+            SELECT
+                pmpr.city_code AS  city_code,
+                pmpr.scene_id AS  scene_id,
+                pmpr.device_num,
+                pmpr.pv*pmpr.device_num*pmprs.stock AS  pv,
+                pmpr.uv*pmpr.device_num AS  uv,
+                pmpr.ssp_adslot_id AS  adslot_id,
+                pmpr.ssp_app_id AS  ad_app_id ,
+                pmprs.mdate AS put_time,
+                pmprs.stock AS num,
+                pmprs.id  as pmp_resouce_stock_id
+            FROM
+                `pmp_resource` pmpr,
+                pmp_resouce_stock pmprs
+            WHERE pmprs.id IN(1,2)
+    </select>
+    <insert id="insertPmp_order_detail">
+        INSERT INTO pmp_order_detail (
+        order_detail_id,
+        adslot_id,
+        city_code,
+        scene_id,
+        estimate_pv,
+        estimate_uv,
+        put_time,
+        pmp_resouce_stock_id,
+        order_id,
+        creat_time
+        )
+        VALUES
+        <foreach collection="list" item="map" index="index" separator=",">(
+            (SELECT REPLACE(UUID(), '-', '') AS order_detail_id),
+            #{map.adslot_id},
+            #{map.city_code},
+            #{map.scene_id},
+            #{map.pv},
+            #{map.uv},
+            #{map.put_time},
+            #{map.pmp_resouce_stock_id},
+            #{orderid},
+            now())
+        </foreach>
+    </insert>
 </mapper>
