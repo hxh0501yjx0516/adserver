@@ -46,31 +46,34 @@ public class OrderService implements IOrderService {
 //        map.put("sdate", "2018-11-29");
 //        map.put("detail", "1,2");
 //        System.err.println(gson.toJson(map));
-        Map<String, Object> orderMap = gson.fromJson(order_name, Map.class);
+            Map<String, Object> orderMap = gson.fromJson(order_name, Map.class);
 //        System.err.println(orderMap.get("detail"));
 /**
  * 获取价格
  */
-        Map<String, String> channelAndPriceMap = orderDao.getChannelAndPrice(orderMap.get("ad_id").toString());
+            Map<String, String> channelAndPriceMap = orderDao.getChannelAndPrice(orderMap.get("ad_id").toString());
 
-        String detail = orderMap.get("detail").toString();
-        String[] details = detail.split(",");
-        List<String> detaillist = new ArrayList<>();
-        for (String str : details) {
-            detaillist.add(str);
-        }
-        Map<String, Object> pvuvmap = orderDao.getPvUv(detaillist,Integer.parseInt(orderMap.get("num").toString()));
-        int pv = Integer.parseInt(pvuvmap.get("pv").toString());
-        int uv = Integer.parseInt(pvuvmap.get("uv").toString());
+            String detail = orderMap.get("detail").toString();
+            String[] details = detail.split(",");
+            List<String> detaillist = new ArrayList<>();
+            for (String str : details) {
+                detaillist.add(str);
+            }
+            Map<String, Object> pvuvmap = orderDao.getPvUv(detaillist, Integer.parseInt(orderMap.get("num").toString()), Integer.parseInt(channelAndPriceMap.get("floor_price")), Integer.parseInt(channelAndPriceMap.get("price")));
+            int pv = Integer.parseInt(pvuvmap.get("pv").toString());
+            int uv = Integer.parseInt(pvuvmap.get("uv").toString());
+            int floor_price = Integer.parseInt(pvuvmap.get("floor_price").toString());
+            int loverprice = Integer.parseInt(pvuvmap.get("price").toString());
 
 
-        Map<String, Object> resultMap = new HashMap<>();
-        resultMap.put("pv", pv);
-        resultMap.put("uv", uv);
-        resultMap.put("success", 200);
-        resultMap.put("price", channelAndPriceMap.get("price"));
-        return gson.toJson(resultMap);
-        }catch (Exception e ){
+            Map<String, Object> resultMap = new HashMap<>();
+            resultMap.put("pv", pv);
+            resultMap.put("uv", uv);
+            resultMap.put("success", 200);
+            resultMap.put("price", floor_price);
+            return gson.toJson(resultMap);
+        } catch (Exception e) {
+            e.printStackTrace();
             Map<String, Object> resultmap = new HashMap<>();
             resultmap.put("success", 400);
             return JSONUtils.toJSONString(resultmap);
@@ -145,7 +148,15 @@ public class OrderService implements IOrderService {
                 }
 
             }
-
+/**
+ * 获取价格
+ */
+            Map<String, String> channelAndPriceMap = orderDao.getChannelAndPrice(orderMap.get("ad_id").toString());
+            Map<String, Object> pvuvmap = orderDao.getPvUv(detaillist, Integer.parseInt(orderMap.get("num").toString()), Integer.parseInt(channelAndPriceMap.get("floor_price")), Integer.parseInt(channelAndPriceMap.get("price")));
+            int pv = Integer.parseInt(pvuvmap.get("pv").toString());
+            int uv = Integer.parseInt(pvuvmap.get("uv").toString());
+            int floor_price = Integer.parseInt(pvuvmap.get("floor_price").toString());
+            int loverprice = Integer.parseInt(pvuvmap.get("price").toString());
             /**
              * 生成订单
              */
@@ -160,7 +171,8 @@ public class OrderService implements IOrderService {
             insertOrderMap.put("order_name", orderMap.get("order_name"));
             insertOrderMap.put("ad_customer_id", orderMap.get("customer"));
             insertOrderMap.put("num", orderMap.get("num"));
-            insertOrderMap.put("money", orderMap.get("price"));
+            insertOrderMap.put("floor_price", floor_price);
+            insertOrderMap.put("money", loverprice);
             insertOrderMap.put("material_id", orderMap.get("material"));
             insertOrderMap.put("sdate", orderMap.get("sdate"));
             insertOrderMap.put("edate", orderMap.get("edate"));

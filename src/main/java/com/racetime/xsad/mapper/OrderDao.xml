@@ -4,31 +4,37 @@
 
     <select id='getChannelAndPrice' resultType="java.util.Map">
         SELECT
-            ap.price AS price,
-            ac.id AS channel_id
+             IFNULL( ap.price ,'')AS price,
+              IFNULL(ac.id ,'')AS channel_id,
+              IFNULL(ad.floor_price,'')AS  floor_price
         FROM
             `ad_position` ap,
             ad_channel ac,
-            ad_app aa
+            ad_app aa,
+            `adx_adslot` ad,
+            adslot_relation ar
         WHERE
             aa.channel_id = ac.id
         AND ap.app_id = aa.id
-        AND aa.channel_id = ac.id
+        AND ar.ssp_adslot_id = ap.id
+        AND ar.adx_adslot_id = ad.id
         AND ap.thrid_position_id = #{ad_posttion_id}
     </select>
 
     <select id="getPvUv" resultType="java.util.Map">
             SELECT
                 SUM(
-                    pmpr.pv * pmpr.device_num *${num}
+                pmpr.pv * pmpr.device_num * ${num}
                 ) AS pv,
-                SUM(uv * device_num) AS uv
+                SUM(uv * device_num) AS uv,
+                SUM(${num}*${price}) AS price,
+                SUM(${num}*${floor_price}) AS floor_price
             FROM
                 `pmp_resource` pmpr,
                 pmp_resouce_stock pmprs
             WHERE
                 pmpr.id = pmprs.pmp_resouce_id
-            AND pmprs.id IN
+                    AND pmprs.id IN
         <foreach item="item" index="index" collection="list" open="("
                  separator="," close=")">
             #{item}
@@ -70,6 +76,7 @@
             ad_customer_id,
             num,
             money,
+            floor_price,
             material_id,
             start_time,
             end_time,
@@ -90,6 +97,7 @@
                 #{map.ad_customer_id},
                 #{map.num},
                 #{map.money},
+                #{map.floor_price},
                 #{map.material_id},
                 #{map.sdate},
                 #{map.sdate},
@@ -145,4 +153,5 @@
             now())
         </foreach>
     </insert>
+
 </mapper>

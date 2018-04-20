@@ -28,7 +28,7 @@ public interface OrderDao {
      * @param list
      * @return
      */
-    Map<String, Object> getPvUv(@Param("list") List<String> list, @Param("num") int num);
+    Map<String, Object> getPvUv(@Param("list") List<String> list, @Param("num") int num,@Param("floor_price") int floor_price,@Param("price") int price);
 
     /**
      * 已有订单
@@ -60,4 +60,6 @@ public interface OrderDao {
      * 插入子订单
      */
     void insertPmp_order_detail(@Param("list") List<Map<String, Object>> list, @Param("orderid") String orderId);
+
+
 }
