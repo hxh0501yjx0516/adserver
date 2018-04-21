@@ -40,10 +40,28 @@
   </select>
   <!--获取订单时间和投放份数  -->
   <select id="getOrderInfo" resultType="Map" parameterType="String">
-	select sum(t.num) as stock ,min(t.start_time) as start_time ,max(t.end_time) as end_time  from pmp_orders t where  exists (
-	   select  1 from pmp_order_detail t1 where t1.pmp_resource_id = #{pmp_resource_id} and t1.order_id = t.orderid
+	<!-- select sum(t.num) as stock ,min(t.start_time) as start_time ,max(t.end_time) as end_time  from pmp_orders t where  exists (
+	   select  1 from pmp_order_detail t1 where t1.pmp_resouce_stock_id = #{pmp_resource_id} and t1.order_id = t.orderid
+	) and t.order_type != '3' -->
+	 <!--exists 方式  -->
+	select sum(t.num) as stock ,min(t.start_time) as start_time ,max(t.end_time) as end_time  from pmp_orders t 
+	 where  exists (
+	   select  1 from pmp_order_detail t1 ,pmp_resource_stock t2
+	   where t1.pmp_resouce_stock_id = t2.id
+	   and t2.pmp_resource_id = #{pmp_resource_id}
+	   and t1.order_id = t.orderid
 	) and t.order_type != '3'
+	<!-- 
+	select sum(t.num) as stock ,min(t.start_time) as start_time ,max(t.end_time) as end_time  from pmp_orders t 
+	 where t.orderid in (
+	   select  1 from pmp_order_detail t1 ,pmp_resource_stock t2
+	   where t1.pmp_resouce_stock_id = t2.id
+	   and t2.pmp_resource_id = #{pmp_resource_id}
+	   and t1.order_id = t.orderid
+	   group by t1.order_id
+	) and t.order_type != '3' -->
   </select>
+  
    <!--获取设备组投放时间和库存  -->
    <select id="getPmpResouceStock" parameterType="String" resultType="Map">
    	 select t1.id,t1.mdate ,t1.stock from pmp_resource_stock t1 where t1.pmp_resource_id = #{pmp_resource_id} order by t1.mdate asc
