@@ -46,9 +46,15 @@ public class StockController {
 	 */
 	@ResponseBody
 	@RequestMapping("/getAppStock")
-	public String getAppStock(){
+	public String getAppStock(String sdate,String edate){
 		//stockService.getAppStockInfo();
-		return stockService.getAppStockInfo();
+		if(sdate == null || edate == null){
+			return "0";
+		}
+		Map<String,Object> param = new HashMap<>();
+		param.put("sdate", sdate);
+		param.put("edate", edate);
+		return stockService.getAppStockInfo(param);
 	}
 	
 	/**

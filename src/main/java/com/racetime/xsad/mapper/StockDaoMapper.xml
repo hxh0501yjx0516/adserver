@@ -40,26 +40,28 @@
   </select>
   <!--获取订单时间和投放份数  -->
   <select id="getOrderInfo" resultType="Map" parameterType="String">
-	<!-- select sum(t.num) as stock ,min(t.start_time) as start_time ,max(t.end_time) as end_time  from pmp_orders t where  exists (
-	   select  1 from pmp_order_detail t1 where t1.pmp_resouce_stock_id = #{pmp_resource_id} and t1.order_id = t.orderid
-	) and t.order_type != '3' -->
-	 <!--exists 方式  -->
-	select sum(t.num) as stock ,min(t.start_time) as start_time ,max(t.end_time) as end_time  from pmp_orders t 
-	 where  exists (
-	   select  1 from pmp_order_detail t1 ,pmp_resource_stock t2
-	   where t1.pmp_resouce_stock_id = t2.id
-	   and t2.pmp_resource_id = #{pmp_resource_id}
-	   and t1.order_id = t.orderid
-	) and t.order_type != '3'
-	<!-- 
-	select sum(t.num) as stock ,min(t.start_time) as start_time ,max(t.end_time) as end_time  from pmp_orders t 
-	 where t.orderid in (
-	   select  1 from pmp_order_detail t1 ,pmp_resource_stock t2
-	   where t1.pmp_resouce_stock_id = t2.id
-	   and t2.pmp_resource_id = #{pmp_resource_id}
-	   and t1.order_id = t.orderid
-	   group by t1.order_id
-	) and t.order_type != '3' -->
+	<!-- select t1.num as stock,min(t.put_time) as start_time ,max(t.put_time) as end_time
+	from pmp_order_detail t , 
+	pmp_orders t1 
+	where  t.order_id = t1.orderid 
+	and t1.order_type != '3'
+	and t.pmp_resouce_stock_id in (
+	  select t3.id from pmp_resource t2,pmp_resource_stock t3 where t2.id = t3.pmp_resource_id
+	  and t2.id = #{pmp_resource_id}
+	) -->
+	select sum(t1.num) as stock, t.put_time as put_time
+	from pmp_order_detail t , 
+	pmp_orders t1 
+	where  t.order_id = t1.orderid 
+	and t1.order_type != '3'
+	and t.pmp_resouce_stock_id in (
+	  select t3.id from pmp_resource t2,pmp_resource_stock t3 where t2.id = t3.pmp_resource_id
+	  and t2.id = #{pmp_resource_id}
+	)
+	GROUP BY t.put_time
+	
+	
+	
   </select>
   
    <!--获取设备组投放时间和库存  -->
@@ -75,31 +77,63 @@
    </select>
    <!--获取app下所有投放库存量  -->
    <select id="getOderAppStock" parameterType="String" resultType="Map">
-	   	SELECT
+	 		<!--  SELECT
 		(
 			SELECT
 				sum(num)
 			FROM
-				pmp_orders t1
+				pmp_orders t1,pmp_order_detail t4
 			WHERE
 				t1.order_type = '1'
-			AND t1.orderid = t.orderid
-			GROUP BY t1.ad_app_id
+			AND t1.orderid = t4.order_id
+    	and t1.ad_app_id = #{ad_app_id}
+
 		)  AS ydnum,
 		(
 			SELECT
 				sum(num)
 			FROM
-				pmp_orders t2
+				pmp_orders t2 ,pmp_order_detail t5
 			WHERE
 				t2.order_type = '2'
-			AND t2.orderid = t.orderid
-			GROUP BY t2.ad_app_id
-	) AS sdnum
+      		AND t2.orderid = t5.order_id
+			  and t2.ad_app_id = #{ad_app_id}
+			 ) AS sdnum
+	FROM
+		pmp_orders t
+		
+	  WHERE t.ad_app_id = #{ad_app_id}
+	  GROUP BY t.ad_app_id -->
+		 SELECT
+		(
+			SELECT
+				sum(num)
+			FROM
+				pmp_orders t1,pmp_order_detail t4
+			WHERE
+				t1.order_type = '1'
+			AND t1.orderid = t4.order_id
+    		and t1.ad_app_id = #{ad_app_id}
+    		and t4.put_time &gt;= #{sdate}
+      		and t4.put_time &lt;= #{edate}
+
+		)  AS ydnum,
+		(
+			SELECT
+				sum(num)
+			FROM
+				pmp_orders t2 ,pmp_order_detail t5
+			WHERE
+				t2.order_type = '2'
+      		AND t2.orderid = t5.order_id
+			  and t2.ad_app_id = #{ad_app_id}
+       		  and t5.put_time &gt;= #{sdate}
+			  and t5.put_time &lt;= #{edate}
+			 ) AS sdnum
 	FROM
 		pmp_orders t
 	  WHERE t.ad_app_id = #{ad_app_id}
-	  GROUP BY t.ad_app_id
+    GROUP BY t.ad_app_id	 
    
    </select>
    <!--获取app下所有库存量  -->
