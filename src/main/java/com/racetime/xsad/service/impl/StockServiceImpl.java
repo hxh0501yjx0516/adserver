@@ -1,5 +1,7 @@
 package com.racetime.xsad.service.impl;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -36,7 +38,11 @@ public class StockServiceImpl implements StockService{
 				value.put("app_id", deviceInfo.get(i).get("ssp_app_id"));
 				value.put("adslot_id", deviceInfo.get(i).get("ssp_adslot_id"));
 				value.put("scene_id", deviceInfo.get(i).get("scene_id"));
-				value.put("name", deviceInfo.get(i).get("name"));
+				try {
+					value.put("name", URLEncoder.encode(deviceInfo.get(i).get("name").toString(), "UTF-8"));
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				}
 				value.put("city_code", deviceInfo.get(i).get("city_code"));
 				//获取该资源组在订单中的时间段
 				Map<String,Object> orderInfo = stockDaoMapper.getOrderInfo(deviceInfo.get(i).get("id").toString());
