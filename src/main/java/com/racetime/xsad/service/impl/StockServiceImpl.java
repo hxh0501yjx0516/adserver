@@ -1,5 +1,7 @@
 package com.racetime.xsad.service.impl;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -29,18 +31,27 @@ public class StockServiceImpl implements StockService{
 	public String getStockInfo(Map<String, Object> param) {
 		List<Map<String,Object>> json = new ArrayList<>();
 		List<Map<String,Object>> deviceInfo = stockDaoMapper.getPmpResource(param);
-		if(deviceInfo != null){
+		if(deviceInfo != null && deviceInfo.size() >0){
+			Map<String,Object> stockParam = null;
 			for (int i = 0; i < deviceInfo.size(); i++) {
 				Map<String,Object> value = new HashMap<>();
 				value.put("app_id", deviceInfo.get(i).get("ssp_app_id"));
 				value.put("adslot_id", deviceInfo.get(i).get("ssp_adslot_id"));
 				value.put("scene_id", deviceInfo.get(i).get("scene_id"));
-				value.put("name", deviceInfo.get(i).get("name"));
+				try {
+					value.put("name", URLEncoder.encode(deviceInfo.get(i).get("name").toString(), "UTF-8"));
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				}
 				value.put("city_code", deviceInfo.get(i).get("city_code"));
 				//获取该资源组在订单中的时间段
 				Map<String,Object> orderInfo = stockDaoMapper.getOrderInfo(deviceInfo.get(i).get("id").toString());
 				//获取该该资源组下的库存和投放时间
-				List<Map<String,Object>> stockInfo = stockDaoMapper.getPmpResouceStock(deviceInfo.get(i).get("id").toString());
+				stockParam = new HashMap<>();
+				stockParam.put("pmp_resource_id", deviceInfo.get(i).get("id").toString());
+				stockParam.put("sdate", param.get("sdate").toString());
+				stockParam.put("edate", param.get("edate").toString());
+				List<Map<String,Object>> stockInfo = stockDaoMapper.getPmpResouceStock(stockParam);
 				Map<String,Object> mdate = new TreeMap<String,Object>();
 				//组装mdate
 				for (int j = 0; j < stockInfo.size(); j++) {
@@ -68,7 +79,7 @@ public class StockServiceImpl implements StockService{
 		}else{
 			return "0";
 		}
-		System.out.println(new Gson().toJson(json));
+		//System.out.println(new Gson().toJson(json));
 		return new Gson().toJson(json);
 	}
 

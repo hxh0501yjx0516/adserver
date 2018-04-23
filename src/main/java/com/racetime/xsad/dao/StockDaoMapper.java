@@ -9,7 +9,7 @@ public interface StockDaoMapper {
 	
 	public Map<String,Object> getOrderInfo(String pmp_resource_id);
 	
-	public List<Map<String,Object>> getPmpResouceStock(String pmp_resource_id);
+	public List<Map<String,Object>> getPmpResouceStock(Map<String,Object> map);
 	
 	public List<Map<String,Object>> getAllAppStock();
 	

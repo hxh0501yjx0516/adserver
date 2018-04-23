@@ -63,8 +63,15 @@
   </select>
   
    <!--获取设备组投放时间和库存  -->
-   <select id="getPmpResouceStock" parameterType="String" resultType="Map">
-   	 select t1.id,t1.mdate ,t1.stock from pmp_resource_stock t1 where t1.pmp_resource_id = #{pmp_resource_id} order by t1.mdate asc
+   <select id="getPmpResouceStock" parameterType="Map" resultType="Map">
+   	 select t1.id,t1.mdate ,t1.stock from pmp_resource_stock t1 where t1.pmp_resource_id = #{pmp_resource_id} 
+   	 <if test=" sdate != null and sdate != ''">
+  	   and t1.mdate &gt;= #{sdate}
+  	  </if>
+  	  <if test=" edate != null and edate != ''">
+  	  	and t1.mdate &lt;= #{edate}
+      </if>
+   	 
    </select>
    <!--获取app下所有投放库存量  -->
    <select id="getOderAppStock" parameterType="String" resultType="Map">
