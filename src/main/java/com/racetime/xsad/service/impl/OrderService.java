@@ -47,7 +47,7 @@ public class OrderService implements IOrderService {
 /**
  * 获取价格
  */
-            Map<String, String> channelAndPriceMap = orderDao.getChannelAndPrice(orderMap.get("ad_id").toString());
+            Map<String, Object> channelAndPriceMap = orderDao.getChannelAndPrice(orderMap.get("ad_id").toString());
 
             String detail = orderMap.get("detail").toString();
             String[] details = detail.split(",");
@@ -55,18 +55,18 @@ public class OrderService implements IOrderService {
             for (String str : details) {
                 detaillist.add(str);
             }
-            Map<String, Object> pvuvmap = orderDao.getPvUv(detaillist, Integer.parseInt(orderMap.get("num").toString()), Integer.parseInt(channelAndPriceMap.get("floor_price")), Integer.parseInt(channelAndPriceMap.get("price")));
+            Map<String, Object> pvuvmap = orderDao.getPvUv(detaillist, Integer.parseInt(orderMap.get("num").toString()), Integer.parseInt(channelAndPriceMap.get("price").toString()));
             int pv = Integer.parseInt(pvuvmap.get("pv").toString());
             int uv = Integer.parseInt(pvuvmap.get("uv").toString());
             int floor_price = Integer.parseInt(pvuvmap.get("floor_price").toString());
-            int loverprice = Integer.parseInt(pvuvmap.get("price").toString());
+            int price = Integer.parseInt(pvuvmap.get("price").toString());
 
 
             Map<String, Object> resultMap = new HashMap<>();
             resultMap.put("pv", pv);
             resultMap.put("uv", uv);
             resultMap.put("success", 200);
-            resultMap.put("price", floor_price);
+            resultMap.put("price", price);
             return gson.toJson(resultMap);
         } catch (Exception e) {
             e.printStackTrace();
@@ -147,12 +147,12 @@ public class OrderService implements IOrderService {
 /**
  * 获取价格
  */
-            Map<String, String> channelAndPriceMap = orderDao.getChannelAndPrice(orderMap.get("ad_id").toString());
-            Map<String, Object> pvuvmap = orderDao.getPvUv(detaillist, Integer.parseInt(orderMap.get("num").toString()), Integer.parseInt(channelAndPriceMap.get("floor_price")), Integer.parseInt(channelAndPriceMap.get("price")));
+            Map<String, Object> channelAndPriceMap = orderDao.getChannelAndPrice(orderMap.get("ad_id").toString());
+            Map<String, Object> pvuvmap = orderDao.getPvUv(detaillist, Integer.parseInt(orderMap.get("num").toString()), Integer.parseInt(channelAndPriceMap.get("price").toString()));
             int pv = Integer.parseInt(pvuvmap.get("pv").toString());
             int uv = Integer.parseInt(pvuvmap.get("uv").toString());
             int floor_price = Integer.parseInt(pvuvmap.get("floor_price").toString());
-            int loverprice = Integer.parseInt(pvuvmap.get("price").toString());
+            int price = Integer.parseInt(pvuvmap.get("price").toString());
             /**
              * 生成订单
              */
@@ -168,7 +168,7 @@ public class OrderService implements IOrderService {
             insertOrderMap.put("ad_customer_id", orderMap.get("customer"));
             insertOrderMap.put("num", orderMap.get("num"));
             insertOrderMap.put("floor_price", floor_price);
-            insertOrderMap.put("money", loverprice);
+            insertOrderMap.put("money", price);
             insertOrderMap.put("material_id", orderMap.get("material"));
             insertOrderMap.put("sdate", orderMap.get("sdate"));
             insertOrderMap.put("edate", orderMap.get("edate"));

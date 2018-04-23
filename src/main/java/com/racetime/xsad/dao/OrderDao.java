@@ -19,7 +19,7 @@ public interface OrderDao {
      * @param ad_id 广告位
      * @return
      */
-    Map<String, String> getChannelAndPrice(@Param("ad_posttion_id") String ad_id);
+    Map<String, Object> getChannelAndPrice(@Param("thrid_position_id") String ad_id);
 
     /**
      * 查询pv,uv
@@ -27,7 +27,7 @@ public interface OrderDao {
      * @param list
      * @return
      */
-    Map<String, Object> getPvUv(@Param("list") List<String> list, @Param("num") int num,@Param("floor_price") int floor_price,@Param("price") int price);
+    Map<String, Object> getPvUv(@Param("list") List<String> list, @Param("num") int num,@Param("price") int price);
 
     /**
      * 已有订单

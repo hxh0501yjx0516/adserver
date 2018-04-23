@@ -3,22 +3,15 @@
 <mapper namespace="com.racetime.xsad.dao.OrderDao">
 
     <select id='getChannelAndPrice' resultType="java.util.Map">
-        SELECT
-             IFNULL( ap.price ,'')AS price,
-              IFNULL(ac.id ,'')AS channel_id,
-              IFNULL(ad.floor_price,'')AS  floor_price
-        FROM
-            `ad_position` ap,
-            ad_channel ac,
-            ad_app aa,
-            `adx_adslot` ad,
-            adslot_relation ar
-        WHERE
-            aa.channel_id = ac.id
-        AND ap.app_id = aa.id
-        AND ar.ssp_adslot_id = ap.id
-        AND ar.adx_adslot_id = ad.id
-        AND ap.thrid_position_id = #{ad_posttion_id}
+            SELECT
+                adp.price,
+                ada.channel_id
+            FROM
+                `ad_position` adp,
+                ad_app ada
+            WHERE
+                adp.app_id = ada.id
+            AND adp.thrid_position_id=#{thrid_position_id}
     </select>
 
     <select id="getPvUv" resultType="java.util.Map">
@@ -28,7 +21,7 @@
                 ) AS pv,
                 SUM(uv * device_num) AS uv,
                 SUM(${num}*${price}) AS price,
-                SUM(${num}*${floor_price}) AS floor_price
+                SUM(${num}*pmpr.price) AS floor_price
             FROM
                     `pmp_resource` pmpr,
                     pmp_resource_stock pmprs
@@ -50,6 +43,7 @@
             WHERE
                 pmpo.orderid = pmpod.order_id
             AND pmpo.order_type IN (1, 2)
+            AND  pmpod.put_time &gt; CURDATE()
             GROUP BY
                 pmpod.pmp_resouce_stock_id,
                 pmpod.put_time
