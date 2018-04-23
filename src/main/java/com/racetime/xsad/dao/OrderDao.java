@@ -54,7 +54,7 @@ public interface OrderDao {
     /**
      * 查询库存
      */
-    List<Map<String, Object>> getResource(@Param("list") List<String> list);
+    List<Map<String, Object>> getResource(@Param("list") List<String> list,@Param("num") int num);
 
     /**
      * 插入子订单

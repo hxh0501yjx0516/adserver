@@ -192,7 +192,7 @@ public class OrderService implements IOrderService {
                 resourceStockList.add(str);
             }
 
-            List<Map<String, Object>> resourceList = orderDao.getResource(resourceStockList);
+            List<Map<String, Object>> resourceList = orderDao.getResource(resourceStockList,Integer.parseInt(orderMap.get("num").toString()));
             orderDao.insertPmp_order_detail(resourceList, orderId);
 
             Map<String, Object> resultmap = new HashMap<>();

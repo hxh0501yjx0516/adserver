@@ -30,10 +30,10 @@
                 SUM(${num}*${price}) AS price,
                 SUM(${num}*${floor_price}) AS floor_price
             FROM
-                `pmp_resource` pmpr,
-                pmp_resouce_stock pmprs
-            WHERE
-                pmpr.id = pmprs.pmp_resouce_id
+                    `pmp_resource` pmpr,
+                    pmp_resource_stock pmprs
+                    WHERE
+                    pmpr.id = pmprs.pmp_resource_id
                     AND pmprs.id IN
         <foreach item="item" index="index" collection="list" open="("
                  separator="," close=")">
@@ -60,9 +60,9 @@
                 pmprs.id AS  id
             FROM
                 `pmp_resource` pmpr,
-                pmp_resouce_stock pmprs
+                pmp_resource_stock pmprs
             WHERE
-                pmpr.id = pmprs.pmp_resouce_id
+                pmpr.id = pmprs.pmp_resource_id
 
     </select>
     <insert id="InsertOrder">
@@ -100,7 +100,7 @@
                 #{map.floor_price},
                 #{map.material_id},
                 #{map.sdate},
-                #{map.sdate},
+                #{map.edate},
                 #{map.ad_channel_id},
                 #{map.scene_id},
                 #{map.city_code},
@@ -114,7 +114,7 @@
                 pmpr.city_code AS  city_code,
                 pmpr.scene_id AS  scene_id,
                 pmpr.device_num,
-                pmpr.pv*pmpr.device_num*pmprs.stock AS  pv,
+                pmpr.pv*pmpr.device_num*${num} AS  pv,
                 pmpr.uv*pmpr.device_num AS  uv,
                 pmpr.ssp_adslot_id AS  adslot_id,
                 pmpr.ssp_app_id AS  ad_app_id ,
@@ -123,8 +123,15 @@
                 pmprs.id  as pmp_resouce_stock_id
             FROM
                 `pmp_resource` pmpr,
-                pmp_resouce_stock pmprs
-            WHERE pmprs.id IN(1,2)
+                pmp_resource_stock pmprs
+            WHERE
+               pmpr.id = pmprs.pmp_resource_id
+            AND
+             pmprs.id IN
+        <foreach item="item" index="index" collection="list" open="("
+                 separator="," close=")">
+            #{item}
+        </foreach>
     </select>
     <insert id="insertPmp_order_detail">
         INSERT INTO pmp_order_detail (
