@@ -201,7 +201,7 @@ public class StockServiceImpl implements StockService{
 			//获取该资源组ID和日期
 			List<Map<String,Object>> orderInfo = stockDaoMapper.getOrderInfo(resouceDateInfo.get(i).get("pmp_resource_id").toString());
 				for (int j = 0; j < orderInfo.size(); j++) {
-					if(resouceDateInfo.get(i).get("mdate").equals(orderInfo.get(j).get("put_time").toString())){
+					if(resouceDateInfo.get(i).get("mdate").toString().equals(orderInfo.get(j).get("put_time").toString())){
 						if(stock < Integer.parseInt(orderInfo.get(j).get("stock").toString())){
 							ids.add(Integer.parseInt(resouceDateInfo.get(i).get("pmp_resource_stock_id").toString()));
 						}
