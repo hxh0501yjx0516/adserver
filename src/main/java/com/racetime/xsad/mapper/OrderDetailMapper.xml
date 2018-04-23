@@ -34,12 +34,12 @@
 		  o.adslot_id,
 		  w.name adslot_name,
 		  o.city_code,
-		  a.ka_area city_name,
+		  a.name city_name,
 		  o.scene_id,
 		  s.name scene_name,
 		  p.ad_channel_id channel_id,
 		  c.name channel_name,
-		  t.name customer_name,
+		  t.company customer_name,
 		  o.estimate_pv,
 		  o.estimate_uv,
 		  o.reality_pv,
@@ -50,8 +50,8 @@
 		  pmp_order_detail o 
 		  LEFT JOIN scene s 
 		    ON o.scene_id = s.id 
-		  LEFT JOIN t_area a 
-		    ON o.city_code = a.ka_id
+		  LEFT JOIN region a 
+		    ON o.city_code = a.code
 		  LEFT JOIN pmp_orders p 
 		    ON o.order_id = p.orderid 
 		  LEFT JOIN ad_channel c 
@@ -84,7 +84,7 @@
 				<![CDATA[and o.put_time  <= #{edate}]]>
 			</if>
 		</where>	
-		 order by put_time desc
+		 order by o.put_time desc
 		 	<if test="startSize != null and pageSize != null and startSize != '' and pageSize != ''">
 				limit #{startSize},#{pageSize} 
 			</if>
@@ -98,8 +98,8 @@
 		  pmp_order_detail o 
 		  LEFT JOIN scene s 
 		    ON o.scene_id = s.id 
-		  LEFT JOIN t_area a 
-		    ON o.city_code = a.ka_id
+		  LEFT JOIN region a 
+		    ON o.city_code = a.code
 		  LEFT JOIN pmp_orders p 
 		    ON o.order_id = p.orderid 
 		  LEFT JOIN ad_channel c 
