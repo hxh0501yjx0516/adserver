@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
  **/
 @Component
 public class Timer {
-    @Scheduled(cron="0/10 * *  * * ? ")   //每10秒执行一次
+    @Scheduled(cron="${goTest}")   //每10秒执行一次
     public  void goTest(){
         System.err.println("怎么回事");
     }
