@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.racetime.xsad.dao.PriceSnapshootDao">
+
+	<insert id="execute" >
+		INSERT INTO ssp_report (
+		  ssp_adslot_id,
+		  ssp_price,
+		  adx_adslot_id,
+		  adx_price,
+		  return_success_num,
+		  DATETIME
+		) 
+		SELECT 
+		  a.ssp_adslot_id,
+		  a.ssp_price,
+		  a.adx_adslot_id,
+		  a.adx_price,
+		  b.`return_success_num`,
+		  DATE_SUB(CURDATE(), INTERVAL 1 DAY) 
+		FROM
+		  (SELECT 
+		    ssp.`id` ssp_adslot_id,
+		    ssp.`price` ssp_price,
+		    adx.`channel_adslot_id` adx_adslot_id,
+		    adx.`floor_price` adx_price 
+		  FROM
+		    adx_adslot adx,
+		    ssp_adslot ssp,
+		    adslot_relation ad 
+		  WHERE ad.`ssp_adslot_id` = ssp.`id` 
+		    AND ad.`adx_adslot_id` = adx.`id` 
+		    AND adx.`state` = 1 
+		    AND ssp.status = 1) a 
+		  LEFT JOIN 
+		    (SELECT 
+		      r.ssp_adslot_id,
+		      r.adx_adslot_id,
+		      SUM(r.return_success_num) return_success_num 
+		    FROM
+		      adx_report r 
+		    WHERE r.date_day = DATE_SUB(CURDATE(), INTERVAL 1 DAY) 
+		    GROUP BY r.`adx_adslot_id`,
+		      r.`ssp_adslot_id`) b 
+		    ON a.ssp_adslot_id = b.ssp_adslot_id 
+		    AND b.adx_adslot_id = a.adx_adslot_id 
+	</insert>
+</mapper>
