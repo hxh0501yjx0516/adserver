@@ -15,19 +15,39 @@
     </select>
 
     <select id="getPvUv" resultType="java.util.Map">
-            SELECT
-                SUM(
-                pmpr.pv * pmpr.device_num * ${num}
-                ) AS pv,
-                SUM(uv * device_num) AS uv,
-                SUM(${num}*${price}) AS price,
-                SUM(${num}*pmpr.price) AS floor_price
-            FROM
-                    `pmp_resource` pmpr,
-                    pmp_resource_stock pmprs
-                    WHERE
-                    pmpr.id = pmprs.pmp_resource_id
-                    AND pmprs.id IN
+        SELECT
+        SUM(
+        pmpr.pv * pmpr.device_num * ${num}
+        ) AS pv,
+        SUM(uv * device_num) AS uv,
+        SUM(${num}*${price}) AS price,
+        SUM(${num}*pmpr.price) AS floor_price
+        FROM
+        `pmp_resource` pmpr,
+        pmp_resource_stock pmprs
+        WHERE
+        pmpr.id = pmprs.pmp_resource_id
+        AND pmprs.id IN
+        <foreach item="item" index="index" collection="list" open="("
+                 separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+    <select id="getPVandUVandPRICE" resultType="java.util.Map">
+        SELECT
+        SUM(pr.pv * pr.device_num * ${num}) AS pv,
+        SUM(pr.uv * ${num}) AS uv,
+        SUM(par.sailed_cpm * ${num}) price,
+        SUM(pr.price* ${num})  floor_price
+        FROM
+        `pmp_resource` pr,
+        pmp_resource_stock prs,
+        pmp_adxadslot_relation par
+        WHERE
+        pr.id = prs.pmp_resource_id
+        AND par.pmp_resource_id = pr.id
+        AND prs.id IN
         <foreach item="item" index="index" collection="list" open="("
                  separator="," close=")">
             #{item}
@@ -75,8 +95,6 @@
             start_time,
             end_time,
             ad_channel_id,
-            scene_id,
-            region_id,
              order_type,
             createtime
         )
@@ -96,32 +114,30 @@
                 #{map.sdate},
                 #{map.edate},
                 #{map.ad_channel_id},
-                #{map.scene_id},
-                #{map.city_code},
                 1,
                 now()
             )
     </insert>
     <select id="getResource" resultType="java.util.Map">
 
-            SELECT
-                pmpr.city_code AS  city_code,
-                pmpr.scene_id AS  scene_id,
-                pmpr.device_num,
-                pmpr.pv*pmpr.device_num*${num} AS  pv,
-                pmpr.uv*pmpr.device_num AS  uv,
-                pmpr.ssp_adslot_id AS  adslot_id,
-                pmpr.ssp_app_id AS  ad_app_id ,
-                pmprs.mdate AS put_time,
-                pmprs.stock AS num,
-                pmprs.id  as pmp_resouce_stock_id
-            FROM
-                `pmp_resource` pmpr,
-                pmp_resource_stock pmprs
-            WHERE
-               pmpr.id = pmprs.pmp_resource_id
-            AND
-             pmprs.id IN
+        SELECT
+        pmpr.city_code AS city_code,
+        pmpr.scene_id AS scene_id,
+        pmpr.device_num,
+        pmpr.pv*pmpr.device_num*${num} AS pv,
+        pmpr.uv*pmpr.device_num AS uv,
+        pmpr.ssp_adslot_id AS adslot_id,
+        pmpr.ssp_app_id AS ad_app_id ,
+        pmprs.mdate AS put_time,
+        pmprs.stock AS num,
+        pmprs.id as pmp_resouce_stock_id
+        FROM
+        `pmp_resource` pmpr,
+        pmp_resource_stock pmprs
+        WHERE
+        pmpr.id = pmprs.pmp_resource_id
+        AND
+        pmprs.id IN
         <foreach item="item" index="index" collection="list" open="("
                  separator="," close=")">
             #{item}
@@ -155,4 +171,69 @@
         </foreach>
     </insert>
 
+    <select id="getCustomer_id" resultType="java.util.Map">
+        SELECT
+            materiel_url,
+            customer_id
+        FROM
+            `ad_material`
+        WHERE
+            dic_examine_id = 1
+    </select>
+    <update id="insertOrUpdateAdx_Report">
+        <selectKey keyProperty="count" resultType="int" order="BEFORE">
+            SELECT count(1) FROM `adx_report` WHERE md5Key=#{pojo.md5Key}
+        </selectKey>
+        <if test="count == 0">
+            INSERT INTO adx_report (
+            ssp_app_id,
+            ssp_adslot_id,
+            adx_app_id,
+            adx_adslot_id,
+            ad_customer_id,
+            ad_channel_code,
+            ad_city_code,
+            date_hour,
+            date_day,
+            ad_serving_id,
+            md5Key,
+            adx_request_num,
+            response_bid_success_num,
+            response_bid_fail_num,
+            return_success_num,
+            black_success_num
+            )
+            VALUES
+            (
+            #{pojo.ssp_app_id},
+            #{pojo.ssp_adslot_id},
+            #{pojo.adx_app_id},
+            #{pojo.adx_adslot_id},
+            #{pojo.ad_customer_id},
+            #{pojo.ad_channel_id},
+            #{pojo.ad_city_code},
+            #{pojo.date_hour},
+            #{pojo.date_day},
+            #{pojo.ad_serving_id},
+            #{pojo.md5Key},
+            #{pojo.adx_request_num},
+            #{pojo.response_bid_success_num},
+            #{pojo.response_bid_fail_num},
+            #{pojo.return_success_num},
+            #{pojo.black_success_num}
+            )
+        </if>
+        <if test="count>0">
+            UPDATE
+            adx_report
+            SET
+            adx_request_num = adx_request_num + #{pojo.adx_request_num},
+            response_bid_success_num = response_bid_success_num + #{pojo.response_bid_success_num},
+            response_bid_fail_num = response_bid_fail_num + #{pojo.response_bid_fail_num},
+            return_success_num = return_success_num + #{pojo.return_success_num},
+            black_success_num = black_success_num + #{pojo.black_success_num}
+            WHERE
+            md5Key=#{pojo.md5Key}
+        </if>
+    </update>
 </mapper>

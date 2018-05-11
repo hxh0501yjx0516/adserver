@@ -27,6 +27,7 @@ public class OrderService implements IOrderService {
     @Override
     public String getNum(String order_name) {
 
+        System.err.println("==========" + order_name);
         Gson gson = new GsonBuilder().enableComplexMapKeySerialization().create();
         try {
 
@@ -47,26 +48,32 @@ public class OrderService implements IOrderService {
 /**
  * 获取价格
  */
-            Map<String, Object> channelAndPriceMap = orderDao.getChannelAndPrice(orderMap.get("ad_id").toString());
-
+//            Map<String, Object> channelAndPriceMap = orderDao.getChannelAndPrice(orderMap.get("ad_id").toString());
+//
+//            String detail = orderMap.get("detail").toString();
+//            String[] details = detail.split(",");
+//            List<String> detaillist = new ArrayList<>();
+//            for (String str : details) {
+//                detaillist.add(str);
+//            }
+//            Map<String, Object> pvuvmap = orderDao.getPvUv(detaillist, Integer.parseInt(orderMap.get("num").toString()), Integer.parseInt(channelAndPriceMap.get("price").toString()));
+//            int pv = Integer.parseInt(pvuvmap.get("pv").toString());
+//            int uv = Integer.parseInt(pvuvmap.get("uv").toString());
+//            int floor_price = Integer.parseInt(pvuvmap.get("floor_price").toString());
+//            int price = Integer.parseInt(pvuvmap.get("price").toString());
             String detail = orderMap.get("detail").toString();
             String[] details = detail.split(",");
             List<String> detaillist = new ArrayList<>();
             for (String str : details) {
                 detaillist.add(str);
             }
-            Map<String, Object> pvuvmap = orderDao.getPvUv(detaillist, Integer.parseInt(orderMap.get("num").toString()), Integer.parseInt(channelAndPriceMap.get("price").toString()));
-            int pv = Integer.parseInt(pvuvmap.get("pv").toString());
-            int uv = Integer.parseInt(pvuvmap.get("uv").toString());
-            int floor_price = Integer.parseInt(pvuvmap.get("floor_price").toString());
-            int price = Integer.parseInt(pvuvmap.get("price").toString());
-
-
+            Map<String, Object> map = orderDao.getPVandUVandPRICE(detaillist, orderMap.get("num").toString());
             Map<String, Object> resultMap = new HashMap<>();
-            resultMap.put("pv", pv);
-            resultMap.put("uv", uv);
+            resultMap.put("pv", map.get("pv"));
+            resultMap.put("uv", map.get("uv"));
             resultMap.put("success", 200);
-            resultMap.put("price", price);
+            resultMap.put("price", map.get("price"));
+            resultMap.put("floor_price", map.get("floor_price"));
             return gson.toJson(resultMap);
         } catch (Exception e) {
             e.printStackTrace();
@@ -147,12 +154,7 @@ public class OrderService implements IOrderService {
 /**
  * 获取价格
  */
-            Map<String, Object> channelAndPriceMap = orderDao.getChannelAndPrice(orderMap.get("ad_id").toString());
-            Map<String, Object> pvuvmap = orderDao.getPvUv(detaillist, Integer.parseInt(orderMap.get("num").toString()), Integer.parseInt(channelAndPriceMap.get("price").toString()));
-            int pv = Integer.parseInt(pvuvmap.get("pv").toString());
-            int uv = Integer.parseInt(pvuvmap.get("uv").toString());
-            int floor_price = Integer.parseInt(pvuvmap.get("floor_price").toString());
-            int price = Integer.parseInt(pvuvmap.get("price").toString());
+
             /**
              * 生成订单
              */
@@ -167,13 +169,12 @@ public class OrderService implements IOrderService {
             insertOrderMap.put("order_name", orderMap.get("order_name"));
             insertOrderMap.put("ad_customer_id", orderMap.get("customer"));
             insertOrderMap.put("num", orderMap.get("num"));
-            insertOrderMap.put("floor_price", floor_price);
-            insertOrderMap.put("money", price);
+            insertOrderMap.put("floor_price", orderMap.get("floor_price"));
+            insertOrderMap.put("money", orderMap.get("price"));
             insertOrderMap.put("material_id", orderMap.get("material"));
             insertOrderMap.put("sdate", orderMap.get("sdate"));
             insertOrderMap.put("edate", orderMap.get("edate"));
-            insertOrderMap.put("ad_channel_id", 1);
-            insertOrderMap.put("city_code", orderMap.get("city_code"));
+            insertOrderMap.put("ad_channel_id", orderMap.get("channel_id"));
             orderDao.InsertOrder(insertOrderMap);
             /**
              * 生成详情订单
@@ -188,7 +189,7 @@ public class OrderService implements IOrderService {
                 resourceStockList.add(str);
             }
 
-            List<Map<String, Object>> resourceList = orderDao.getResource(resourceStockList,Integer.parseInt(orderMap.get("num").toString()));
+            List<Map<String, Object>> resourceList = orderDao.getResource(resourceStockList, Integer.parseInt(orderMap.get("num").toString()));
             orderDao.insertPmp_order_detail(resourceList, orderId);
 
             Map<String, Object> resultmap = new HashMap<>();
