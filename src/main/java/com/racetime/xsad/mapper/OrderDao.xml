@@ -173,12 +173,12 @@
 
     <select id="getCustomer_id" resultType="java.util.Map">
         SELECT
-            materiel_url,
+            material_url,
             customer_id
         FROM
             `ad_material`
         WHERE
-            dic_examine_id = 1
+            status = 1
     </select>
     <update id="insertOrUpdateAdx_Report">
         <selectKey keyProperty="count" resultType="int" order="BEFORE">
