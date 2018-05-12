@@ -7,6 +7,8 @@ import com.racetime.xsad.dao.OrderDao;
 import com.racetime.xsad.pojo.*;
 import com.racetime.xsad.service.ICensusService;
 import com.racetime.xsad.util.MD5Util;
+import org.apache.commons.collections.map.HashedMap;
+import org.omg.PortableInterceptor.INACTIVE;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
@@ -39,6 +41,63 @@ public class CensusService implements ICensusService {
     @Autowired
     private OrderDao orderDao;
     private static Map<String, Object> staticMap = new HashMap<>();
+
+    @Override
+    public void launcCcount() {
+//        Map<String, Object> map1 = new HashedMap();
+//        map1.put("strategy_id", "37");
+//        JSONObject jsonObject = new JSONObject();
+//        jsonObject.put("request_id", "60be8f5e743b45bfb12605e16677dbca");
+//        jsonObject.put("log_data", map1);
+
+
+        ShardedJedis shardedJedis = shardedJedisPool.getResource();
+        try {
+            Collection<Jedis> collection = shardedJedis.getAllShards();
+            Iterator<Jedis> jedis = collection.iterator();
+            while (jedis.hasNext()) {
+                jedis.next().select(2);
+            }
+//            shardedJedis.sadd("callback", jsonObject.toJSONString());
+//            String launcCcount = shardedJedis.spop("callback");
+            Set<String> launcCcountSet = shardedJedis.spop("callback", 100);
+            Map<String, Integer> insertRedisMap = new HashMap<>();
+            for (String launcCcount : launcCcountSet) {//遍历redis中取出的数据处理整合
+                JSONObject obj = JSONObject.parseObject(launcCcount);
+                String log_data = obj.get("log_data").toString();
+                JSONObject log_dataJSON = JSONObject.parseObject(log_data);
+                String strategy_id = log_dataJSON.get("strategy_id").toString();
+                if (insertRedisMap != null && insertRedisMap.size() > 0 && insertRedisMap.get("strategy_id") != null) {
+                    insertRedisMap.put(strategy_id, insertRedisMap.get(strategy_id) + 1);
+                } else {
+                    insertRedisMap.put(strategy_id, 1);
+                }
+            }
+            /**
+             * 往redis中仍计数
+             */
+            if (insertRedisMap != null && insertRedisMap.size() > 0) {
+                for (Map.Entry<String, Integer> entry : insertRedisMap.entrySet()) {
+                    String key = entry.getKey();
+                    Integer value = entry.getValue();
+
+                    if (shardedJedis.hget("drop_count", key) != null) {
+                        int count = Integer.parseInt(shardedJedis.hget("drop_count", key));
+                        shardedJedis.hset("drop_count", key, String.valueOf(value + count));
+                    } else {
+                        shardedJedis.hset("drop_count", key, value.toString());
+                    }
+                }
+            }
+
+        } finally
+
+        {
+            shardedJedis.close();
+        }
+
+    }
+
 
     /**
      * 读取日志
@@ -76,13 +135,11 @@ public class CensusService implements ICensusService {
     private Map<String, String> getRedis() {
         ShardedJedis shardedJedis = shardedJedisPool.getResource();
         try {
-            ShardedJedisPipeline sp = shardedJedis.pipelined();
             Collection<Jedis> collection = shardedJedis.getAllShards();
             Iterator<Jedis> jedis = collection.iterator();
             while (jedis.hasNext()) {
                 jedis.next().select(0);
             }
-
             Map<String, String> map = shardedJedis.hgetAll("execute_num");
             return map;
         } finally {
@@ -95,45 +152,59 @@ public class CensusService implements ICensusService {
      */
     private void dataReport(Map<String, String> map, List<BDPojo> bdPojoList) {
 
+        ShardedJedis shardedJedis = shardedJedisPool.getResource();
+        try {
+            ShardedJedisPipeline sp = shardedJedis.pipelined();
+            Collection<Jedis> collection = shardedJedis.getAllShards();
+            Iterator<Jedis> jedis = collection.iterator();
+            while (jedis.hasNext()) {
+                jedis.next().select(0);
+            }
 
-//        List<BDPojo> bdPojoList = new ArrayList<>();
-//        List<PTPojo> ptPojoList = new ArrayList<>();
 
-        String bd_pt = null;
-        for (Map.Entry<String, String> entry : map.entrySet()) {
-            String value = entry.getValue();
-            List<Object> list = JSON.parseArray(value, Object.class);
-            int listNum = list.size();
-            int if_6_or_7 = 0;
-            String line;
+            String bd_pt = null;
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                String key = entry.getKey();
+                String value = entry.getValue();
+                List<Object> list = JSON.parseArray(value, Object.class);
+                int listNum = list.size();
+                int if_6_or_7 = 0;
+                String line;
 
-            for (int i = 0; i < listNum; i++) {
-                line = list.get(i).toString();
-                JSONObject jsonObject = JSONObject.parseObject(line);
-                int type = Integer.parseInt(jsonObject.get("log_type").toString());
-                if (type == 3) {
-                    continue;
-                }
-                JSONObject json = JSONObject.parseObject(jsonObject.get("log_data").toString());
-
-                if (type == 6) {
-                    bd_pt = jsonObject.get("source_type").toString();
-                    if ("1003".equals(json.get("code")) || "1001".equals(json.get("code"))) {
-                        if_6_or_7 = 6;
-                        break;
+                for (int i = 0; i < listNum; i++) {
+                    line = list.get(i).toString();
+                    JSONObject jsonObject = JSONObject.parseObject(line);
+                    int type = Integer.parseInt(jsonObject.get("log_type").toString());
+                    if (type == 3) {
+                        continue;
                     }
-                } else if (type == 7) {
-                    if_6_or_7 = 7;
+                    JSONObject json = JSONObject.parseObject(jsonObject.get("log_data").toString());
 
+                    if (type == 6) {
+                        bd_pt = jsonObject.get("source_type").toString();
+                        if ("1003".equals(json.get("code")) || "1001".equals(json.get("code"))) {
+                            if_6_or_7 = 6;
+                            break;
+                        }
+                    } else if (type == 7) {
+                        if_6_or_7 = 7;
+
+                    }
+                }
+                if (if_6_or_7 == 6) {
+                    getPojo6(list, bdPojoList);
+                    //删除redis
+                    sp.hdel("execute_num", key);
+
+                } else if (if_6_or_7 == 7) {
+                    getPojo7(list, bd_pt, bdPojoList);
+                    //删除redis
+                    sp.hdel("execute_num", key);
                 }
             }
-            if (if_6_or_7 == 6) {
-                getPojo6(list, bdPojoList);
-                //删除redis
-            } else if (if_6_or_7 == 7) {
-                getPojo7(list, bd_pt, bdPojoList);
-                //删除redis
-            }
+            sp.sync();
+        } finally {
+            shardedJedis.close();
         }
 
     }
@@ -166,6 +237,7 @@ public class CensusService implements ICensusService {
                     pojo.setAd_serving_id(bdPojo.getAd_serving_id());
                     pojo.setAd_city_code(bdPojo.getAd_city_code());
                     pojo.setMd5Key(md5Key);
+                    pojo.setScene_id(bdPojo.getScene_id());
                     bdPojoMap.put(md5Key, pojo);
                 }
 
@@ -649,8 +721,8 @@ public class CensusService implements ICensusService {
 //        } else {
 //            System.out.println("集合为空，无法解析");
 //        }
-        Map<String, Integer> map = new HashMap<>();
-        System.err.println(map.get("123"));
+//        Map<String, Integer> map = new HashMap<>();
+//        System.err.println(map.get("123"));
     }
 
 }

@@ -18,4 +18,9 @@ public interface ICensusService {
     void handleReport();
 
     void getCustomer_id();
+
+    /**
+     * 投放计数
+     */
+    public void launcCcount();
 }

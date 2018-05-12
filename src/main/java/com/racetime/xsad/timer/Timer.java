@@ -23,6 +23,7 @@ public class Timer {
         System.err.println("怎么回事");
         censusService.collectReport();
     }
+
     @Scheduled(cron = "${handleReport}")
     void handleReport() {
         censusService.handleReport();
@@ -31,5 +32,10 @@ public class Timer {
     @Scheduled(cron = "${getgetCustomer_id}")
     void getgetCustomer_id() {
         censusService.getCustomer_id();
+    }
+
+    @Scheduled(cron = "${launcCcount}")
+    void launcCcount() {
+        censusService.launcCcount();
     }
 }
