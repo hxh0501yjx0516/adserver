@@ -201,7 +201,9 @@
             response_bid_success_num,
             response_bid_fail_num,
             return_success_num,
-            black_success_num
+            black_success_num,
+            createtime,
+            scene_id
             )
             VALUES
             (
@@ -220,7 +222,9 @@
             #{pojo.response_bid_success_num},
             #{pojo.response_bid_fail_num},
             #{pojo.return_success_num},
-            #{pojo.black_success_num}
+            #{pojo.black_success_num},
+            now(),
+            #{pojo.scene_id}
             )
         </if>
         <if test="count>0">

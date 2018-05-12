@@ -56,7 +56,7 @@ public class CensusService implements ICensusService {
             Collection<Jedis> collection = shardedJedis.getAllShards();
             Iterator<Jedis> jedis = collection.iterator();
             while (jedis.hasNext()) {
-                jedis.next().select(2);
+                jedis.next().select(0);
             }
 //            shardedJedis.sadd("callback", jsonObject.toJSONString());
 //            String launcCcount = shardedJedis.spop("callback");
@@ -175,6 +175,11 @@ public class CensusService implements ICensusService {
                     line = list.get(i).toString();
                     JSONObject jsonObject = JSONObject.parseObject(line);
                     int type = Integer.parseInt(jsonObject.get("log_type").toString());
+                    if (listNum == 1 && type == 7) {//如果只有7，直接扔掉，垃圾数据
+                        sp.hdel("execute_num", key);
+                        break;
+                    }
+
                     if (type == 3) {
                         continue;
                     }
@@ -183,7 +188,7 @@ public class CensusService implements ICensusService {
                     if (type == 6) {
                         bd_pt = jsonObject.get("source_type").toString();
                         if ("1003".equals(json.get("code")) || "1001".equals(json.get("code"))) {
-                            if_6_or_7 = 6;
+                            if_6_or_7 = 7;
                             break;
                         }
                     } else if (type == 7) {
@@ -191,15 +196,11 @@ public class CensusService implements ICensusService {
 
                     }
                 }
-                if (if_6_or_7 == 6) {
-                    getPojo6(list, bdPojoList);
+                if (if_6_or_7 == 6 || if_6_or_7 == 7) {
+                    getPojo(list, bd_pt, bdPojoList);
                     //删除redis
-                    sp.hdel("execute_num", key);
+                    //sp.hdel("execute_num", key);
 
-                } else if (if_6_or_7 == 7) {
-                    getPojo7(list, bd_pt, bdPojoList);
-                    //删除redis
-                    sp.hdel("execute_num", key);
                 }
             }
             sp.sync();
@@ -308,80 +309,14 @@ public class CensusService implements ICensusService {
         }
     }
 
-    /**
-     * 如果是返回广告失败的情况
-     *
-     * @param
-     * @param
-     * @param list
-     */
-    private void getPojo6(List<Object> list, List<BDPojo> bdPojoLis) {
-        String line = null;
-        int listNum = list.size();
-        BDPojo bdPojo = new BDPojo();
-        BDPojo ptPojo = new BDPojo();
-        for (int i = 0; i < listNum; i++) {
-            line = list.get(i).toString();
-            JSONObject jsonObject = JSONObject.parseObject(line);
-            int type = Integer.parseInt(jsonObject.get("log_type").toString());
-            if (type == 3) {
-                continue;
-            }
-            JSONObject json = JSONObject.parseObject(jsonObject.get("log_data").toString());
-
-            if (type == 1) {
-                //获取场景和城市code
-                bdPojo.setSsp_app_id(json.get("app_id").toString());
-                bdPojo.setSsp_adslot_id(json.get("adslot_id").toString());
-                ptPojo.setSsp_app_id(json.get("app_id").toString());
-                ptPojo.setSsp_adslot_id(json.get("adslot_id").toString());
-            } else if (type == 2) {
-                //获取场景和城市code
-                bdPojo.setAd_city_code(json.get("city_code").toString());
-                bdPojo.setScene_id(json.get("scene_id").toString());
-                ptPojo.setAd_city_code(json.get("city_code").toString());
-                ptPojo.setScene_id(json.get("scene_id").toString());
-            } else if (type == 4) {
-                //bd获取app_id和adslot_id
-                //pt获取strategy_id和 app_id
-                if ("BD".equals(jsonObject.get("source_type"))) {
-                    bdPojo.setAdx_app_id(json.get("app_id").toString());
-                    JSONObject adslot_id = JSONObject.parseObject(json.get("slot").toString());
-                    bdPojo.setAdx_adslot_id(adslot_id.get("adslot_id").toString());
-                    ptPojo.setAd_serving_id("0");
-                    bdPojo.setAd_channel_id("BD");
-                    bdPojo.setAdx_request_num(1);
-
-                } else if ("PT".equals(jsonObject.get("source_type"))) {
-                    bdPojo.setAdx_app_id(json.get("app_id").toString());
-                    ptPojo.setAdx_adslot_id(json.get("adslot_id").toString());
-                    ptPojo.setAd_serving_id(json.get("strategy_id").toString());
-                    ptPojo.setAd_channel_id("PT");
-                    ptPojo.setAdx_request_num(1);
-                }
-            } else if (type == 6) {
-                bdPojo.setResponse_bid_fail_num(1);
-                ptPojo.setResponse_bid_fail_num(1);
-
-            }
-            //插入list集合
-            if (bdPojo.getAdx_app_id() != null) {
-                bdPojoLis.add(bdPojo);
-            }
-            if (ptPojo.getAd_serving_id() != null) {
-                bdPojoLis.add(ptPojo);
-            }
-        }
-
-    }
 
     /**
-     * 如果是返回广告成功的情况
+     * 处理完整日志的逻辑
      *
      * @param
      * @param list
      */
-    private void getPojo7(List<Object> list, String bd_pt, List<BDPojo> bdPojoList) {
+    private void getPojo(List<Object> list, String bd_pt, List<BDPojo> bdPojoList) {
         String line = null;
         int listNum = list.size();
         BDPojo bdPojo = new BDPojo();
@@ -432,16 +367,25 @@ public class CensusService implements ICensusService {
                 if (staticMap.get(key) != null) {
                     //bd 判断是否成功，失败
                     if ("BD".equals(jsonObject.get("source_type"))) {
-                        bdPojo.setResponse_bid_success_num(1);
-                        ptPojo.setResponse_bid_fail_num(1);
-                        bdPojo.setAd_customer_id(staticMap.get(key).toString());
-                        ptPojo.setAd_customer_id("0");
-                    } else if ("PT".equals(jsonObject.get("source_type"))) {
-                        ptPojo.setResponse_bid_success_num(1);
-                        bdPojo.setResponse_bid_fail_num(1);
-                        ptPojo.setAd_customer_id(staticMap.get(key).toString());
-                        bdPojo.setAd_customer_id("0");
+                        if ("1002".equals(json.get("code"))) {
+                            bdPojo.setResponse_bid_success_num(1);
+                            ptPojo.setResponse_bid_fail_num(1);
+                            bdPojo.setAd_customer_id(staticMap.get(key).toString());
+                            ptPojo.setAd_customer_id("0");
+                        } else if ("1003".equals(json.get("code")) || "1001".equals(json.get("code"))) {
+                            bdPojo.setResponse_bid_fail_num(1);
 
+                        }
+                    } else if ("PT".equals(jsonObject.get("source_type"))) {
+                        if ("1002".equals(json.get("code"))) {
+                            ptPojo.setResponse_bid_success_num(1);
+                            bdPojo.setResponse_bid_fail_num(1);
+                            ptPojo.setAd_customer_id(staticMap.get(key).toString());
+                            bdPojo.setAd_customer_id("0");
+                        } else if ("1003".equals(json.get("code")) || "1001".equals(json.get("code"))) {
+                            ptPojo.setResponse_bid_fail_num(1);
+
+                        }
 
                     }
                 }
@@ -479,7 +423,6 @@ public class CensusService implements ICensusService {
         for (int i = 0; i < sourcefiles.length; i++) {
             String fileName = sourcefiles[i].getAbsoluteFile().getName();
             System.err.println(fileName);
-            System.err.println(getDatetime());
             BufferedReader bufr = null;
             InputStreamReader isr = null;
             try {
@@ -601,8 +544,37 @@ public class CensusService implements ICensusService {
         return sdf.format(cal.getTime());
     }
 
+    private String getDateTime() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return sdf.format(new Date());
+    }
+
+    /**
+     * 分钟差
+     *
+     * @param start
+     * @param end
+     * @return
+     */
+    private int getMinute(String start, String end) {
+        SimpleDateFormat simpleFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        long from = 0;
+        long to = 0;
+        int minutes = 0;
+        try {
+            from = simpleFormat.parse(start).getTime();
+            to = simpleFormat.parse(end).getTime();
+            minutes = (int) ((to - from) / (1000 * 60));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        return minutes;
+    }
+
     /**
      * starttime-endTime >0
+     * 判断要拿的文件
      *
      * @param startime
      * @param endTime
@@ -723,6 +695,10 @@ public class CensusService implements ICensusService {
 //        }
 //        Map<String, Integer> map = new HashMap<>();
 //        System.err.println(map.get("123"));
+//        String end = "2018-05-01 12:33:55";
+//        String start = "2018-05-01 12:00:21";
+//        System.err.println(getMinute(start, end));
+//        System.err.println(getDateTime());
     }
 
 }
