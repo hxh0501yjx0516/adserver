@@ -29,7 +29,7 @@ public class Timer {
         censusService.handleReport();
     }
 
-    @Scheduled(cron = "${getgetCustomer_id}")
+    @Scheduled(fixedRate = 1000 * 60 * 60 * 12)
     void getgetCustomer_id() {
         censusService.getCustomer_id();
     }

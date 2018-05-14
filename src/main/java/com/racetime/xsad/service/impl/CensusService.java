@@ -204,7 +204,7 @@ public class CensusService implements ICensusService {
                 if (if_6_or_7 == 7) {
                     getPojo(list, bd_pt, bdPojoList);
                     //删除redis
-                    //sp.hdel("execute_num", key);
+                    sp.hdel("execute_num", key);
 
                 }
             }
@@ -472,7 +472,7 @@ public class CensusService implements ICensusService {
                     sourcefiles.clone();
                 }
                 try {
-                    moveFile(path,fileName, env.getProperty("newpath"));
+                    moveFile(path, fileName, env.getProperty("newpath"));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -530,11 +530,11 @@ public class CensusService implements ICensusService {
     private void moveFile(String path, String oldFileName, String newFilePath) throws IOException {
 
         Path fromPath = Paths.get(path); //   相当于 c:\test\a.txt  a.txt为需要复制的文件
-        File storeFile = new File(newFilePath+File.separator+new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
+        File storeFile = new File(newFilePath + File.separator + new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
         if (!storeFile.exists()) {
             storeFile.mkdirs();
         }
-        Path toPath = Paths.get(storeFile+File.separator+oldFileName);  //    相当于 c:\test1\b.txt 。 b.txt无需存在
+        Path toPath = Paths.get(storeFile + File.separator + oldFileName);  //    相当于 c:\test1\b.txt 。 b.txt无需存在
         Files.move(fromPath, toPath); //移动文件（即复制并删除源文件）
     }
 

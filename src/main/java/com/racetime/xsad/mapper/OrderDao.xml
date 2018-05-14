@@ -223,7 +223,7 @@
             #{pojo.response_bid_fail_num},
             #{pojo.return_success_num},
             #{pojo.black_success_num},
-            now(),
+            sysdate(),
             #{pojo.scene_id}
             )
         </if>
