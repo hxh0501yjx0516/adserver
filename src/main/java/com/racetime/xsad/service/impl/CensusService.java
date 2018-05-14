@@ -58,9 +58,7 @@ public class CensusService implements ICensusService {
             while (jedis.hasNext()) {
                 jedis.next().select(0);
             }
-//            shardedJedis.sadd("callback", jsonObject.toJSONString());
-//            String launcCcount = shardedJedis.spop("callback");
-            Set<String> launcCcountSet = shardedJedis.spop("callback", 100);
+            Set<String> launcCcountSet = shardedJedis.spop("callback", 1000);
             Map<String, Integer> insertRedisMap = new HashMap<>();
             for (String launcCcount : launcCcountSet) {//遍历redis中取出的数据处理整合
                 JSONObject obj = JSONObject.parseObject(launcCcount);
@@ -81,11 +79,11 @@ public class CensusService implements ICensusService {
                     String key = entry.getKey();
                     Integer value = entry.getValue();
 
-                    if (shardedJedis.hget("drop_count", key) != null) {
-                        int count = Integer.parseInt(shardedJedis.hget("drop_count", key));
-                        shardedJedis.hset("drop_count", key, String.valueOf(value + count));
+                    if (shardedJedis.hget("execute_num", key) != null) {
+                        int count = Integer.parseInt(shardedJedis.hget("execute_num", key));
+                        shardedJedis.hset("execute_num", key, String.valueOf(value + count));
                     } else {
-                        shardedJedis.hset("drop_count", key, value.toString());
+                        shardedJedis.hset("execute_num", key, value.toString());
                     }
                 }
             }
@@ -190,13 +188,20 @@ public class CensusService implements ICensusService {
                         if ("1003".equals(json.get("code")) || "1001".equals(json.get("code"))) {
                             if_6_or_7 = 7;
                             break;
+                        } else if ("1002".equals(json.get("code"))) {
+                            String start = jsonObject.get("create_time").toString();
+                            int minute = getMinute(start, getDateTime());
+                            if (minute > 30) {
+                                if_6_or_7 = 7;
+                                break;
+                            }
                         }
                     } else if (type == 7) {
                         if_6_or_7 = 7;
 
                     }
                 }
-                if (if_6_or_7 == 6 || if_6_or_7 == 7) {
+                if (if_6_or_7 == 7) {
                     getPojo(list, bd_pt, bdPojoList);
                     //删除redis
                     //sp.hdel("execute_num", key);
@@ -523,7 +528,7 @@ public class CensusService implements ICensusService {
      *
      * @return
      */
-    private String getDatetime() {
+    private String getDayAndHour() {
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.MINUTE, -1);//控制分
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm");
