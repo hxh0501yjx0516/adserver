@@ -426,46 +426,56 @@ public class CensusService implements ICensusService {
         final File[] sourcefiles = getSourceFileAdress().listFiles();//获取源文件
         Map<String, Set<Object>> map = new HashMap<>();//日志的文件进入map集合
         for (int i = 0; i < sourcefiles.length; i++) {
+            String path = sourcefiles[i].getAbsolutePath();
             String fileName = sourcefiles[i].getAbsoluteFile().getName();
-            System.err.println(fileName);
-            BufferedReader bufr = null;
-            InputStreamReader isr = null;
-            try {
-                isr = new InputStreamReader(new FileInputStream(sourcefiles[i]), "UTF-8");
-                bufr = new BufferedReader(isr);
-                String line = null;
-                JSONObject json = null;
-                while ((line = bufr.readLine()) != null) {
-                    if (!"".equals(line)) {
-                        json = JSONObject.parseObject(line);
-                        if (map != null && map.size() > 0) {
-                            if (map.get(json.getString("request_id")) != null) {
-                                map.get(json.getString("request_id")).add(json);
+            String ileDayAndHour = getFileDayAndHour(fileName);
+            String dayAndHour = getDayAndHour();
+            long time = timeDifference(dayAndHour, ileDayAndHour);
+            if (time > 0) {
+                BufferedReader bufr = null;
+                InputStreamReader isr = null;
+                try {
+                    isr = new InputStreamReader(new FileInputStream(sourcefiles[i]), "UTF-8");
+                    bufr = new BufferedReader(isr);
+                    String line = null;
+                    JSONObject json = null;
+                    while ((line = bufr.readLine()) != null) {
+                        if (!"".equals(line)) {
+                            json = JSONObject.parseObject(line);
+                            if (map != null && map.size() > 0) {
+                                if (map.get(json.getString("request_id")) != null) {
+                                    map.get(json.getString("request_id")).add(json);
+                                } else {
+                                    Set<Object> set = new HashSet<>();
+                                    set.add(json);
+                                    map.put(json.getString("request_id"), set);
+
+                                }
                             } else {
                                 Set<Object> set = new HashSet<>();
                                 set.add(json);
                                 map.put(json.getString("request_id"), set);
-
                             }
-                        } else {
-                            Set<Object> set = new HashSet<>();
-                            set.add(json);
-                            map.put(json.getString("request_id"), set);
                         }
                     }
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    try {
+                        isr.close();
+                        bufr.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    sourcefiles.clone();
                 }
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
                 try {
-                    isr.close();
-                    bufr.close();
+                    moveFile(path,fileName, env.getProperty("newpath"));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                sourcefiles.clone();
             }
         }
 
@@ -512,14 +522,19 @@ public class CensusService implements ICensusService {
     /**
      * 将处理过的文件移除
      *
+     * @param path
      * @param oldFileName
-     * @param newFileName
+     * @param newFilePath
      * @throws IOException
      */
-    private void moveFile(String oldFileName, String newFileName) throws IOException {
+    private void moveFile(String path, String oldFileName, String newFilePath) throws IOException {
 
-        Path fromPath = Paths.get(oldFileName); //   相当于 c:\test\a.txt  a.txt为需要复制的文件
-        Path toPath = Paths.get(newFileName);  //    相当于 c:\test1\b.txt 。 b.txt无需存在
+        Path fromPath = Paths.get(path); //   相当于 c:\test\a.txt  a.txt为需要复制的文件
+        File storeFile = new File(newFilePath+File.separator+new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
+        if (!storeFile.exists()) {
+            storeFile.mkdirs();
+        }
+        Path toPath = Paths.get(storeFile+File.separator+oldFileName);  //    相当于 c:\test1\b.txt 。 b.txt无需存在
         Files.move(fromPath, toPath); //移动文件（即复制并删除源文件）
     }
 
@@ -530,7 +545,7 @@ public class CensusService implements ICensusService {
      */
     private String getDayAndHour() {
         Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.MINUTE, -1);//控制分
+        cal.add(Calendar.MINUTE, 0);//控制分
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm");
         return sdf.format(cal.getTime());
     }
@@ -614,69 +629,10 @@ public class CensusService implements ICensusService {
         return sourcefile;
     }
 
-//    public static void main(String[] args) {
-////        ReportPojo reportPojo = new ReportPojo();
-////        System.err.println(reportPojo.getSsp_app_id());
-////        String a = "12321";
-////        String b = "12321";
-////        System.err.println(a == b);
-////        Set<String> set = new HashSet<>();
-////        for (int i = 0; i < set.size(); i++) {
-//////            System.err.println(set.);
-////        }
-//
-//
-////        Map<String, List<Integer>> map = new HashMap<>();
-////        String key = "q";
-////        for (int i = 0; i < 10; i++) {
-////            if (map != null && map.get(key) != null) {
-////                map.get(key).add(1);
-////            } else {
-////                List<Integer> list = new ArrayList<>();
-////                map.put(key, list);
-////            }
-////            String k = "";
-////        }
-////        System.err.println(map.get(key).size());
-//
-//        Map<String, Set<String>> map1 = new HashMap<>();
-//        Map<String, Set<String>> map2 = new HashMap<>();
-//        Set<String> list = new HashSet<>();
-//        list.add("value1");
-//        map1.put("key", list);
-//        list = new HashSet<>();
-//        list.add("value2");
-//        map2.put("key", list);
-//        map1.get("key").addAll(map2.get("key"));
-//        String str = JSON.toJSONString(map1);
-//        System.err.println(str);
-//        JSONObject obj = JSONObject.parseObject(str);
-//
-//        String kk = obj.get("key").toString();
-//
-//        Set<String> s1 = new HashSet<>();
-//        Set<String> s2 = new HashSet<>();
-//        s1.add("1");
-//        s1.add("2");
-//        s1.add("3");
-//        s2.add("2");
-//        s1.addAll(s2);
-//        System.err.println(s1);
-//
-//
-//        System.err.println(kk);
-//
-//
-//        for (int i = 0; i < 10; i++) {
-//            break;
-//        }
-//
-//
-//        String str1 = null;
-//        System.err.println(str1.equals("BD"));
-
-
-//    }
+    private String getFileDayAndHour(String fileName) {
+        String[] files = fileName.split("_");
+        return files[2].replace(".log", "");
+    }
 
     public static void main(String[] args) {
 //        /******list集合添加数据********/
@@ -704,6 +660,11 @@ public class CensusService implements ICensusService {
 //        String start = "2018-05-01 12:00:21";
 //        System.err.println(getMinute(start, end));
 //        System.err.println(getDateTime());
+
+        String fileName = "adapi_192.168.10.140_2018-05-08-18-28.log";
+        String[] files = fileName.split("_");
+        System.err.println(files[2].replace(".log", ""));
+
     }
 
 }
