@@ -9,7 +9,7 @@ public class DateUtil {
 
 	public static void main(String[] args) throws Exception {
 
-		/*Calendar cal = Calendar.getInstance();
+		Calendar cal = Calendar.getInstance();
 		String start = "2012-02-01";
 		String end = "2012-03-02";
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
@@ -18,10 +18,10 @@ public class DateUtil {
 		List<Date> lDate = findDates(dBegin, dEnd);
 		for (Date date : lDate) {
 			System.out.println(sdf.format(date));
-		}*/
+		}
 		
 		
-		java.util.Date nowdate=new java.util.Date(); 
+		/*java.util.Date nowdate=new java.util.Date(); 
 		String myString = "2008-09-08";
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
 		Date d = sdf.parse(myString);
@@ -30,7 +30,7 @@ public class DateUtil {
 		if(flag)
 		System.out.print("早于今天");
 		else;
-		System.out.print("晚于今天");
+		System.out.print("晚于今天");*/
 		
 	}
 
@@ -51,5 +51,9 @@ public class DateUtil {
 		}
 		return lDate;
 	}
+	
+	
+	
+	
 
 }

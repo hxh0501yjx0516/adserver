@@ -1,6 +1,8 @@
 package com.racetime.xsad.dao;
 
+import com.racetime.xsad.pojo.BDPojo;
 import org.apache.ibatis.annotations.Param;
+import org.omg.CORBA.OBJ_ADAPTER;
 
 import java.util.List;
 import java.util.Map;
@@ -27,7 +29,7 @@ public interface OrderDao {
      * @param list
      * @return
      */
-    Map<String, Object> getPvUv(@Param("list") List<String> list, @Param("num") int num,@Param("price") int price);
+    Map<String, Object> getPvUv(@Param("list") List<String> list, @Param("num") int num, @Param("price") int price);
 
     /**
      * 已有订单
@@ -53,12 +55,29 @@ public interface OrderDao {
     /**
      * 查询库存
      */
-    List<Map<String, Object>> getResource(@Param("list") List<String> list,@Param("num") int num);
+    List<Map<String, Object>> getResource(@Param("list") List<String> list, @Param("num") int num);
 
     /**
      * 插入子订单
      */
     void insertPmp_order_detail(@Param("list") List<Map<String, Object>> list, @Param("orderid") String orderId);
+
+    /**
+     * 查询pv, uv，price
+     *
+     * @param list
+     * @return
+     */
+    Map<String, Object> getPVandUVandPRICE(@Param("list") List<String> list, @Param("num") String num);
+
+    /**
+     * 查询物料url，所对应的客户信息
+     *
+     * @return
+     */
+    List<Map<String, Object>> getCustomer_id();
+
+    void insertOrUpdateAdx_Report(@Param("pojo") BDPojo pojo);
 
 
 }
