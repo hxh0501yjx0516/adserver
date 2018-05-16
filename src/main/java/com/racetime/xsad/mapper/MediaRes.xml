@@ -1,0 +1,345 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.racetime.xsad.dao.MediaResDao" >
+   <!--媒体资源上传记录表  -->	
+  <insert id="insertMediaRecord" parameterType="Map">
+  	  insert into ssp_media_record (url,media_account,operator,createtime)
+  	  values(#{url},#{media_account},#{operator},now())
+  </insert>
+ <!--=======================================字典表=========================================================  -->
+ 
+  <!--获取城市编码  -->
+  <select id="getCityInfo" resultType="Map">
+  	 select  code,name from ad_city where level = '2'
+  </select>
+  <!--获取场景  -->	
+  <select id="getScene"  resultType="Map" >
+	 select id,name from ad_scene where level = '2' 
+  </select>	
+  <!--获取资源格式类型  -->
+  <select id="getResFormat" resultType="Map">
+  	 select id,value from dic_resformat 
+  </select>
+  
+  
+  <!-- =======================================RTB================================ -->
+  <!--批量插入设备资源信息  -->
+  <insert id="insertDevice">
+  	 INSERT INTO ad_device
+            (screen_num, poi,address,ssp_devicegroup_id,adx_devicegroup_id,scene_id,city_code,
+           device_id,lat,lon,createtime)
+     VALUES
+    <foreach collection ="list" item="device" separator =",">
+         (#{device.screen_num}, #{device.poi},#{device.address},#{device.ssp_devicegroup_id},#{device.adx_devicegroup_id}
+          ,#{device.scene_id},#{device.city_code},#{device.device_id},#{device.lat},#{device.lon}
+         ,now())
+    </foreach>
+   	ON DUPLICATE KEY UPDATE
+   	updatetime = now(), 
+   	screen_num = CASE device_id
+   	   <foreach collection="list" item="item" index="index">
+			WHEN #{item.device_id} THEN #{item.screen_num}
+		</foreach>
+    END,
+   	poi = CASE device_id
+   	   <foreach collection="list" item="item" index="index">
+			WHEN #{item.device_id} THEN #{item.poi}
+		</foreach>
+    END,
+    address = CASE device_id
+   	   <foreach collection="list" item="item" index="index">
+			WHEN #{item.device_id} THEN #{item.address}
+		</foreach>
+    END,
+   ssp_devicegroup_id = CASE device_id
+   	   <foreach collection="list" item="item" index="index">
+			WHEN #{item.device_id} THEN #{item.ssp_devicegroup_id}
+		</foreach>
+    END,
+   adx_devicegroup_id = CASE device_id
+   	   <foreach collection="list" item="item" index="index">
+			WHEN #{item.device_id} THEN #{item.adx_devicegroup_id}
+		</foreach>
+    END,
+   scene_id = CASE device_id
+   	   <foreach collection="list" item="item" index="index">
+			WHEN #{item.device_id} THEN #{item.scene_id}
+		</foreach>
+    END,
+    city_code = CASE device_id
+   	   <foreach collection="list" item="item" index="index">
+			WHEN #{item.device_id} THEN #{item.city_code}
+		</foreach>
+    END,
+    device_id = CASE device_id
+   	   <foreach collection="list" item="item" index="index">
+			WHEN #{item.device_id} THEN #{item.device_id}
+		</foreach>
+    END
+    
+  </insert>
+  <!-- 根据媒体用户名获取广告位列表  -->
+   <select id="getMediaAdslot" resultType="String" parameterType="Map">
+   		select 
+		DISTINCT 
+		t2.id 
+		from ad_media t,ssp_app  t1,ssp_adslot t2
+		where t1.media_id = t.id and t2.app_id = t1.id
+		and  t1.id = #{app_id}
+		and t.company = #{company_name}
+		and t2.ssp_devicegroup_id = #{ssp_devicegroup_id}
+   </select>
+	
+   <!--根据渠道appid和渠道设备组获取渠道广告位  -->
+	<select id="getMediaAdxAdslot" resultType="String" parameterType="Map">
+		select t1.channel_adslot_id from adx_app_devicegroup t ,
+		adx_adslot t1 where t.adx_adslot_id  = t1.id
+		and t.adx_app_id = #{adx_app_id}
+		and t.adx_devicegroup_id = #{adx_devicegroup_id}
+		and t1.id = #{adx_adslot_id}
+	</select>
+	
+  <!--更新广告位信息  -->
+  <update id="updateSspAdslot" parameterType="List">
+		 update ssp_adslot
+	    <trim prefix="set" suffixOverrides=",">
+		<trim prefix="price =case" suffix="end,">
+		     <foreach collection="list" item="item" index="index">
+		          when id=#{item.ssp_adslot_id} then #{item.price}
+		     </foreach>
+		</trim>
+		<trim prefix="name =case" suffix="end,">
+		     <foreach collection="list" item="item" index="index">
+		          when id=#{item.ssp_adslot_id} then #{item.name}
+		     </foreach>
+		</trim>
+		<trim prefix="ssp_devicegroup_id =case" suffix="end,">
+		     <foreach collection="list" item="item" index="index">
+		          when id=#{item.ssp_adslot_id} then #{item.ssp_devicegroup_id}
+		     </foreach>
+		</trim>
+		
+		</trim>
+	    where id in 
+       	<foreach collection="list" index="index" item="item" separator="," open="(" close=")">
+          	 #{item.ssp_adslot_id}
+       	</foreach>
+  </update>
+  
+  <!--判断是否存在上下游广告位对应关系  -->
+  <select id="getAdslotRelation" parameterType="com.racetime.xsad.model.AdxAdslot" resultType="String">
+	 select id from adslot_relation where ssp_adslot_id = #{ssp_adslot_id} and adx_adslot_id = #{adx_adslot_id}
+  </select>
+  <!--更新上游广告位价格  -->
+  <update id="updateAdxAdslot" parameterType="com.racetime.xsad.model.AdxAdslot">
+  		update adx_adslot set floor_price = #{adx_adslot_price} ,name = #{channel_name},updatetime = now()
+		where id = #{adx_adslot_id}
+  </update>
+  
+   <!--插入上下游广告对应关系  -->
+   <insert id="insertAdslotReation" parameterType="com.racetime.xsad.model.AdxAdslot">
+		 <selectKey  keyProperty="id" resultType="com.racetime.xsad.model.AdxAdslot" order="BEFORE">
+				select count(id) as id from adslot_relation where 
+   					 ssp_adslot_id = #{ssp_adslot_id} and adx_adslot_id = #{adx_adslot_id} 
+	 	   </selectKey> 	
+	 	   <if test="id==0">
+				insert into adslot_relation (ssp_adslot_id,adx_adslot_id) VALUES (#{ssp_adslot_id},#{adx_adslot_id})	 	   
+	 	   </if>
+	 	   <if test="id==1">
+	 	   		update adslot_relation set ssp_adslot_id = '' where id = '0'
+	 	   </if>
+   </insert>
+   
+   
+   <!--查询广告位  -->
+   <select id="getAppGroupRelaltion" parameterType="com.racetime.xsad.model.AdxAdslot" resultType="String">
+   		select id from adx_app_devicegroup where adx_devicegroup_id = #{adx_devicegroup_id}
+   		and adx_app_id = #{adx_app_id} and adx_adslot_id = #{adx_adslot_id} limit 1
+   </select>
+   
+   
+   <!--adx_app_devicegroup -->
+   <insert id="insertAdx_app_devicegroup" parameterType="com.racetime.xsad.model.AdxAdslot">
+   		
+   		<selectKey  keyProperty="id" resultType="com.racetime.xsad.model.AdxAdslot" order="BEFORE">
+				select count(id) as id from adx_app_devicegroup where 
+   					  adx_devicegroup_id = #{adx_devicegroup_id}
+   					  and adx_app_id = #{adx_app_id} 
+   					  and adx_adslot_id = #{adx_adslot_id}
+	 	   </selectKey> 	
+	 	   <if test="id==0">
+				insert into adx_app_devicegroup (adx_devicegroup_id,adx_app_id,adx_adslot_id ) values(
+   				#{adx_devicegroup_id},#{adx_app_id},#{adx_adslot_id}
+   			)
+		   </if>
+		     <!--空sql  -->
+			<if test="id==1">
+					update adx_app_devicegroup set adx_devicegroup_id = #{adx_devicegroup_id}  where id = '0'
+			</if>
+   </insert>
+   
+   <select id="getOTTCountbyAdslot" parameterType="String" resultType="int">
+   	select count(*) as count from adslot_relation where adx_adslot_id in 
+		(
+		select adx_adslot_id  from adx_app_devicegroup t ,adx_app t1 where t.adx_app_id = t1.id
+		and adx_adslot_id = #{adx_adslot_id}  and t1.dic_app_id = '1' 
+		)
+   </select>
+   
+   
+   
+   
+  <!--================================PMP=====================================-->
+  <!--插入pmp 购买单元表  -->
+  <insert id="insertPmpDevice" parameterType="com.racetime.xsad.model.PmpDevice" useGeneratedKeys="true" keyProperty="id">
+  	  <selectKey keyProperty="count" resultType="int" order="BEFORE">
+    	select count(*) as count from pmp_resource where id = #{id}
+ 	 </selectKey>
+ 	 <if test="count==0">
+ 	 	insert into pmp_resource (id,city_code,scene_id,device_num,name,pv,uv,ssp_adslot_id,ssp_app_id,price,sell_num,poi,address,createtime)
+  	 	values(#{id},#{city_code},#{scene_id},#{device_num},#{name},#{pv},#{uv},#{ssp_adslot_id},#{ssp_app_id},#{price},#{poi},#{address},now()) 
+ 	 </if>
+  	 <if test="count==1">
+  	 	update pmp_resource set city_code = #{city_code},scene_id = #{scene_id},device_num= #{device_num},name=#{name},pv=#{pv},
+  	 		uv=#{uv},ssp_adslot_id=#{ssp_adslot_id},ssp_app_id=#{ssp_app_id},price=#{price},poi=#{poi},address=#{address},updatetime=now()
+  	 		where id = #{id}
+  	 </if>
+  </insert>
+  <!--插入pm库存表 -->
+   <insert id="insertPmpStock" parameterType="com.racetime.xsad.model.PmpStock">
+   		  <selectKey  keyProperty="id" resultType="com.racetime.xsad.model.PmpStock" order="BEFORE">
+				select  
+					count(id) as id
+				  from pmp_resource_stock where 
+   					 mdate = DATE_FORMAT(#{mdate},'%Y-%m-%d') and pmp_resource_id = #{pmp_resource_id}
+   					 
+	 	   </selectKey>
+	 	   <if test="id==0">
+	   		 INSERT INTO pmp_resource_stock
+	            (pmp_resource_id,mdate,stock,createtime)
+	     	VALUES
+	    	(#{pmp_resource_id},#{mdate},#{stock},now())
+	 	   </if>
+   		 	<if test="id >0">
+   		 		update pmp_resource_stock set stock=#{stock}
+   		 		where mdate = DATE_FORMAT(#{mdate},'%Y-%m-%d') and pmp_resource_id = #{pmp_resource_id}
+   		 		
+   		 	</if>
+   </insert>  
+   <!--根据售卖单元编号获取ID  -->
+   <select id="getPmpResourceIdBySellNum" parameterType="String">
+   		select id from pmp_resource where sell_num = #{sell_num}
+   </select>
+    <!--添加app和广告位之间关系  -->
+	  <insert id="insertAdxAppGroup" parameterType="com.racetime.xsad.model.PmpAdslotRelation">
+	 	   <!--判断是否有   -->
+	 	   <selectKey  keyProperty="id" resultType="com.racetime.xsad.model.PmpAdslotRelation" order="BEFORE">
+				select count(id) as id from adx_app_devicegroup where 
+   					 adx_app_id = #{adx_app_id} and adx_adslot_id = #{adx_adslot_id} 
+	 	   </selectKey> 	
+	 	   <if test="id==0">
+	 	   	   insert into adx_app_devicegroup (adx_app_id,adx_adslot_id) values(#{adx_app_id},#{adx_adslot_id})
+	 	   </if>
+	 	   <if test="id==1">
+	 	   		update adx_app_devicegroup set adx_app_id = '' where id = '0'
+	 	   </if>
+	  </insert>
+  
+   	 <!--添加pmp和上游渠道价格之间关系  -->
+  	 <insert id="insertPmpAdxAdslotRelation" parameterType="com.racetime.xsad.model.PmpAdslotRelation">
+		  	<selectKey keyProperty="id" resultType="com.racetime.xsad.model.PmpAdslotRelation" order="BEFORE">
+				select count(id) as id from pmp_adxadslot_relation where pmp_resource_id = #{pmp_resource_id} and adx_adslot_id = #{adx_adslot_id}
+				and sailed_cpm = #{cpm}
+		  	</selectKey>
+			<if test="id==0">
+				insert into pmp_adxadslot_relation(sailed_cpm,pmp_resource_id,adx_adslot_id)values(#{cpm},#{pmp_resource_id},#{adx_adslot_id })
+			</if>  	 
+			<if test="id==1">
+				update pmp_adxadslot_relation set sailed_cpm = #{cpm} where 
+				pmp_resource_id = #{pmp_resource_id} and adx_adslot_id = #{adx_adslot_id}
+				
+			</if>
+  	 </insert>
+	  
+  <!-- ===========================================物料============================================  -->
+  <insert id="insertMaterial">
+  		INSERT INTO ad_material
+            (name, material_url,title,remark,md5,type,dic_screen_id,
+           dic_adslot_id,dic_resformat_id,status,video_duration,ad_width,ad_height,ad_size,adx_adslot_id,createtime)
+     VALUES
+    <foreach collection ="list" item="item" separator =",">
+         (#{item.name},#{item.material_url},#{item.title},#{item.remark},#{item.md5},#{item.type},
+          #{item.dic_screen_id},#{item.dic_adslot_id},#{item.dic_resformat_id},'2',#{item.video_duration},
+          #{item.ad_width},#{item.ad_height},#{item.ad_size},#{item.adx_adslot_id},now())
+    </foreach>
+   	ON DUPLICATE KEY UPDATE
+   	updatetime = now(), 
+   	status = '2',
+   	name = CASE material_url
+     <foreach collection="list" item="item" index="index">
+		WHEN #{item.material_url} THEN #{item.name}
+	</foreach>
+    END,
+   	title = CASE material_url
+   	   <foreach collection="list" item="item" index="index">
+			WHEN #{item.material_url} THEN #{item.title}
+		</foreach>
+    END,
+    remark = CASE material_url
+   	   <foreach collection="list" item="item" index="index">
+			WHEN #{item.material_url} THEN #{item.remark}
+		</foreach>
+    END,
+   md5 = CASE material_url
+   	   <foreach collection="list" item="item" index="index">
+			WHEN #{item.material_url} THEN #{item.md5}
+		</foreach>
+    END,
+   type = CASE material_url
+   	   <foreach collection="list" item="item" index="index">
+			WHEN #{item.material_url} THEN #{item.type}
+		</foreach>
+    END,
+   dic_screen_id = CASE material_url
+   	   <foreach collection="list" item="item" index="index">
+			WHEN #{item.material_url} THEN #{item.dic_screen_id}
+		</foreach>
+    END,
+    dic_adslot_id = CASE material_url
+   	   <foreach collection="list" item="item" index="index">
+			WHEN #{item.material_url} THEN #{item.dic_adslot_id}
+		</foreach>
+    END,
+    dic_resformat_id = CASE material_url
+   	   <foreach collection="list" item="item" index="index">
+			WHEN #{item.material_url} THEN #{item.dic_resformat_id}
+		</foreach>
+    END,
+    video_duration = CASE material_url
+   	   <foreach collection="list" item="item" index="index">
+			WHEN #{item.material_url} THEN #{item.video_duration}
+		</foreach>
+    END,
+     ad_width = CASE material_url
+  	<foreach collection="list" item="item" index="index">
+	 WHEN #{item.material_url} THEN #{item.ad_width}
+	</foreach>
+    END,
+   ad_height = CASE material_url
+  	<foreach collection="list" item="item" index="index">
+	 WHEN #{item.material_url} THEN #{item.ad_height}
+	</foreach>
+    END,
+    adx_adslot_id = CASE material_url
+   	   <foreach collection="list" item="item" index="index">
+			WHEN #{item.material_url} THEN #{item.adx_adslot_id}
+		</foreach>
+    END,
+ 	ad_size = CASE material_url
+  	<foreach collection="list" item="item" index="index">
+	 WHEN #{item.material_url} THEN #{item.ad_size}
+	</foreach>
+    END
+  </insert>
+  
+</mapper>
