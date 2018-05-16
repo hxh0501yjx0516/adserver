@@ -58,7 +58,11 @@ public class CensusService implements ICensusService {
             while (jedis.hasNext()) {
                 jedis.next().select(0);
             }
-            Set<String> launcCcountSet = shardedJedis.spop("callback", 1000);
+            boolean isLive = shardedJedis.exists("callback");
+            Set<String> launcCcountSet = new HashSet<>();
+            if (isLive) {
+                launcCcountSet = shardedJedis.spop("callback", 1000);
+            }
             Map<String, Integer> insertRedisMap = new HashMap<>();
             for (String launcCcount : launcCcountSet) {//遍历redis中取出的数据处理整合
                 JSONObject obj = JSONObject.parseObject(launcCcount);
