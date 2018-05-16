@@ -60,9 +60,6 @@ public class CensusService implements ICensusService {
             }
             Set<String> launcCcountSet = shardedJedis.spop("callback", 1000);
             Map<String, Integer> insertRedisMap = new HashMap<>();
-            if (launcCcountSet != null && launcCcountSet.size() > 0) {
-
-
             for (String launcCcount : launcCcountSet) {//遍历redis中取出的数据处理整合
                 JSONObject obj = JSONObject.parseObject(launcCcount);
                 String log_data = obj.get("log_data").toString();
@@ -90,7 +87,7 @@ public class CensusService implements ICensusService {
                     }
                 }
             }
-            }
+
         } finally
 
         {
