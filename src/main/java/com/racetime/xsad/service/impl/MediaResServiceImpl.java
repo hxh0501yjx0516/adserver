@@ -101,7 +101,7 @@ public class MediaResServiceImpl implements MediaResService{
 			Map<String,List<String[]>> result = POIUtil.readExcel(filePath);
 			List<PmpDevice> pmpDevice = getPmpDevice(result.get("0"));
 		    if(pmpDevice.size()>0){
-		    	Map<String,Object> param = null;
+		    	//Map<String,Object> param = null;
 		    	PmpDevice pmpDeviceBean = null;
 		    	for (int i = 0; i < pmpDevice.size(); i++) {
 		    		pmpDeviceBean = pmpDevice.get(i);
@@ -280,8 +280,8 @@ public class MediaResServiceImpl implements MediaResService{
 				pmpDevice.setStock(str[14]);
 				pmpDevice.setPv(str[15]);
 				pmpDevice.setUv(str[16]);
+				//pmpDevice.setCpm(Double.parseDouble(str[17]));
 				pmpDevice.setCpm(Double.parseDouble(str[17]));
-				pmpDevice.setPrice(Double.parseDouble(str[18]));
 				pmpDevices.add(pmpDevice);
 			}
 		return pmpDevices;
@@ -296,7 +296,7 @@ public class MediaResServiceImpl implements MediaResService{
 				adslot.setAdx_app_id(str[0]);
 				adslot.setAdx_adslot_id(str[1]);
 				adslot.setChannel_name(str[3]);
-				adslot.setCpm(Double.parseDouble(str[4]));
+				adslot.setCpm(Double.parseDouble(str[4]));//媒体单价
 				//根据售卖单元获取媒体资源主键
 				adslot.setPmp_resource_id(str[5]);
 				adx_adslot.add(adslot);

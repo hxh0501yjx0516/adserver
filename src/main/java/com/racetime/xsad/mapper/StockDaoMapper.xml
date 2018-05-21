@@ -18,8 +18,8 @@
 		where
 		1=1
 		<!--  t.id = t1.pmp_resouce_id --> 
-		<if test="ssp_adslot_id != null and ssp_adslot_id != ''">  
-       		and t.ssp_adslot_id = #{ssp_adslot_id}
+		<if test="ssp_adslot_id != null and ssp_adslot_id !=''">  
+       		and t.ssp_adslot_id =#{ssp_adslot_id}
     	</if>  
     	<if test="ssp_app_id != null and ssp_app_id != ''">  
        		and t.ssp_app_id = #{ssp_app_id}

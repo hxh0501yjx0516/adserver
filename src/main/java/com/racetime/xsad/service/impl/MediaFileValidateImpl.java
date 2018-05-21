@@ -49,7 +49,7 @@ public class MediaFileValidateImpl implements MediaFileValidate{
 				}
 			}
 			//验证广告位信息是否正确
-			Map<String,Object> param= null;
+			//Map<String,Object> param= null;
 			for (int j = 0; j < datas.get("1").size(); j++) {
 				String [] adslotStr = datas.get("1").get(j);
 				if(adslotStr[1]==""){
@@ -81,7 +81,7 @@ public class MediaFileValidateImpl implements MediaFileValidate{
 			//验证渠道是否正确(渠道)
 			int w = 2;
 			while(w<4){
-				Map<String,Object> channelParam = null;
+				//Map<String,Object> channelParam = null;
 				for (int c = 0; c < datas.get(String.valueOf(w)).size(); c++) {
 					String [] adxslotStr = datas.get(String.valueOf(w)).get(c);
 					String str = "";
@@ -94,7 +94,7 @@ public class MediaFileValidateImpl implements MediaFileValidate{
 						errorList.add(str+",第"+(c+1)+"行,未获取APPSID");
 					}
 					if(adxslotStr[1]==""){
-						errorList.add(str+",第"+(c+1)+"行,未获取渠道设备组");
+						errorList.add(str+",第"+(c+1)+"行,未获取到渠道设备组ID");
 					}
 					if(adxslotStr[2]==""){
 						errorList.add(str+",第"+(c+1)+"行,未获取系统广告位ID");
@@ -176,9 +176,7 @@ public class MediaFileValidateImpl implements MediaFileValidate{
 				}if(str[16]==""){
 					errorList.add("媒体库存排期,第"+(i+1)+"行,未获取到处达人群");
 				}if(str[17]==""){
-					errorList.add("媒体库存排期,第"+(i+1)+"行,未获取到CPM");
-				}if(str[18]==""){
-					errorList.add("媒体库存排期,第"+(i+1)+"行,媒体CPM底价");
+					errorList.add("媒体库存排期,第"+(i+1)+"行,未获取到CPM单价");
 				}
 			}
 			//验证百度渠道
@@ -203,7 +201,7 @@ public class MediaFileValidateImpl implements MediaFileValidate{
 						errorList.add(str+",第"+(j+1)+"行,未获取到"+str+"广告位ID");
 					}
 					if(channelStr[4] == ""){
-						errorList.add(str+",第"+(j+1)+"行,未获取到CPM底价");
+						errorList.add(str+",第"+(j+1)+"行,未获取到CPM单价");
 					}
 					if(channelStr[5] == ""){
 						errorList.add(str+",第"+(j+1)+"行,未获取到售卖单元编号");

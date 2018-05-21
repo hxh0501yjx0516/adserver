@@ -22,6 +22,7 @@
   </select>
   
   
+  
   <!-- =======================================RTB================================ -->
   <!--批量插入设备资源信息  -->
   <insert id="insertDevice">
@@ -196,12 +197,12 @@
     	select count(*) as count from pmp_resource where id = #{id}
  	 </selectKey>
  	 <if test="count==0">
- 	 	insert into pmp_resource (id,city_code,scene_id,device_num,name,pv,uv,ssp_adslot_id,ssp_app_id,price,sell_num,poi,address,createtime)
-  	 	values(#{id},#{city_code},#{scene_id},#{device_num},#{name},#{pv},#{uv},#{ssp_adslot_id},#{ssp_app_id},#{price},#{poi},#{address},now()) 
+ 	 	insert into pmp_resource (id,city_code,scene_id,device_num,name,pv,uv,ssp_adslot_id,ssp_app_id,cpm,sell_num,poi,address,createtime)
+  	 	values(#{id},#{city_code},#{scene_id},#{device_num},#{name},#{pv},#{uv},#{ssp_adslot_id},#{ssp_app_id},#{cpm},#{poi},#{address},now()) 
  	 </if>
   	 <if test="count==1">
   	 	update pmp_resource set city_code = #{city_code},scene_id = #{scene_id},device_num= #{device_num},name=#{name},pv=#{pv},
-  	 		uv=#{uv},ssp_adslot_id=#{ssp_adslot_id},ssp_app_id=#{ssp_app_id},price=#{price},poi=#{poi},address=#{address},updatetime=now()
+  	 		uv=#{uv},ssp_adslot_id=#{ssp_adslot_id},ssp_app_id=#{ssp_app_id},cpm=#{cpm},poi=#{poi},address=#{address},updatetime=now()
   	 		where id = #{id}
   	 </if>
   </insert>
@@ -252,10 +253,10 @@
 				and sailed_cpm = #{cpm}
 		  	</selectKey>
 			<if test="id==0">
-				insert into pmp_adxadslot_relation(sailed_cpm,pmp_resource_id,adx_adslot_id)values(#{cpm},#{pmp_resource_id},#{adx_adslot_id })
+				insert into pmp_adxadslot_relation(price,pmp_resource_id,adx_adslot_id)values(#{cpm},#{pmp_resource_id},#{adx_adslot_id })
 			</if>  	 
 			<if test="id==1">
-				update pmp_adxadslot_relation set sailed_cpm = #{cpm} where 
+				update pmp_adxadslot_relation set price = #{cpm} where 
 				pmp_resource_id = #{pmp_resource_id} and adx_adslot_id = #{adx_adslot_id}
 				
 			</if>

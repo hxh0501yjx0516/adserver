@@ -23,6 +23,7 @@ public interface MediaResDao {
 	
 	public List<Map<String,Object>> getResFormat();
 	
+	
 	//================================RTB===============================
 	public List<String> getMediaAdslot(Map<String,Object> map);
 	
