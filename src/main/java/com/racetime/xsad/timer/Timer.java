@@ -20,7 +20,6 @@ public class Timer {
     @Scheduled(cron = "${collectReport}")
         //每10秒执行一次
     void collectReport() {
-        System.err.println("怎么回事");
         censusService.collectReport();
     }
 
@@ -29,7 +28,7 @@ public class Timer {
         censusService.handleReport();
     }
 
-    @Scheduled(fixedRate = 1000 * 60 * 60 * 12)
+    @Scheduled(fixedRate = 1000 * 60 * 60 * 1)
     void getgetCustomer_id() {
         censusService.getCustomer_id();
     }
