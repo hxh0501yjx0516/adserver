@@ -38,6 +38,9 @@ public class StockServiceImpl implements StockService{
 				value.put("app_id", deviceInfo.get(i).get("ssp_app_id"));
 				value.put("adslot_id", deviceInfo.get(i).get("ssp_adslot_id"));
 				value.put("scene_id", deviceInfo.get(i).get("scene_id"));
+				value.put("pv", deviceInfo.get(i).get("pv"));
+				value.put("uv", deviceInfo.get(i).get("uv"));
+				value.put("device_num", deviceInfo.get(i).get("device_num"));
 				try {
 					value.put("name", URLEncoder.encode(deviceInfo.get(i).get("name").toString(), "UTF-8"));
 				} catch (UnsupportedEncodingException e) {
