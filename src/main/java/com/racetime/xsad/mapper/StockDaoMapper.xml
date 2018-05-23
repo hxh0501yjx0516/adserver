@@ -15,7 +15,7 @@
  <!--获取设备组库存  -->
   <select id="getPmpResource" parameterType="Map" resultType="Map">
 		SELECT t.id,t.name,t.ssp_adslot_id,t.city_code,t.scene_id,t.ssp_app_id,t.city_code,t.pv,t.uv,t.device_num from pmp_resource t 
-		where
+		t.price,t.cpm  where
 		1=1
 		<!--  t.id = t1.pmp_resouce_id --> 
 		<if test="ssp_adslot_id != null and ssp_adslot_id !=''">  
