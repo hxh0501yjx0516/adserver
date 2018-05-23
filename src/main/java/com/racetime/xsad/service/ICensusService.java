@@ -1,5 +1,6 @@
 package com.racetime.xsad.service;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -18,6 +19,8 @@ public interface ICensusService {
     void handleReport();
 
     void getCustomer_id();
+
+    void selectChannel_id();
 
     /**
      * 投放计数

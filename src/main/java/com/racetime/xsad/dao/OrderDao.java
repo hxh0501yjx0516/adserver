@@ -1,8 +1,7 @@
 package com.racetime.xsad.dao;
 
-import com.racetime.xsad.pojo.BDPojo;
+import com.racetime.xsad.pojo.Pojo;
 import org.apache.ibatis.annotations.Param;
-import org.omg.CORBA.OBJ_ADAPTER;
 
 import java.util.List;
 import java.util.Map;
@@ -77,7 +76,9 @@ public interface OrderDao {
      */
     List<Map<String, Object>> getCustomer_id();
 
-    void insertOrUpdateAdx_Report(@Param("pojo") BDPojo pojo);
+    void insertOrUpdateAdx_Report(@Param("pojo") Pojo pojo);
+
+    List<Map<String, Object>> selectChannel_id();
 
 
 }

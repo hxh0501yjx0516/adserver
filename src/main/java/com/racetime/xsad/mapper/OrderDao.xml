@@ -39,7 +39,7 @@
         SUM(pr.pv * pr.device_num * ${num}) AS pv,
         SUM(pr.uv * ${num}) AS uv,
         SUM(par.sailed_cpm * ${num}) price,
-        SUM(pr.price* ${num})  floor_price
+        SUM(pr.price* ${num}) floor_price
         FROM
         `pmp_resource` pr,
         pmp_resource_stock prs,
@@ -179,6 +179,14 @@
             `ad_material`
         WHERE
             status = 1
+    </select>
+
+    <select id="selectChannel_id" resultType="java.util.Map">
+            SELECT
+                id AS adx_app_id,
+                channel_id
+            FROM
+                `adx_app`;
     </select>
     <update id="insertOrUpdateAdx_Report">
         <selectKey keyProperty="count" resultType="int" order="BEFORE">

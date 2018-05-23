@@ -7,7 +7,7 @@ package com.racetime.xsad.pojo;
  * @date 2018-05-09 17:08
  * @versoin 1.0
  **/
-public class BDPojo {
+public class Pojo {
     /************md5Key开始*******/
     private String ssp_app_id;
     private String ssp_adslot_id;

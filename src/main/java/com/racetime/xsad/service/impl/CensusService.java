@@ -7,8 +7,6 @@ import com.racetime.xsad.dao.OrderDao;
 import com.racetime.xsad.pojo.*;
 import com.racetime.xsad.service.ICensusService;
 import com.racetime.xsad.util.MD5Util;
-import org.apache.commons.collections.map.HashedMap;
-import org.omg.PortableInterceptor.INACTIVE;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
@@ -41,6 +39,7 @@ public class CensusService implements ICensusService {
     @Autowired
     private OrderDao orderDao;
     private static Map<String, Object> staticMap = new HashMap<>();
+    private static Map<String, Object> staticChannelMap = new HashMap<>();
 
     @Override
     public void launcCcount() {
@@ -122,7 +121,7 @@ public class CensusService implements ICensusService {
     @Override
     public void handleReport() {
         Map<String, String> map = getRedis();//读取redis
-        List<BDPojo> pdjoList = new ArrayList<>();
+        List<Pojo> pdjoList = new ArrayList<>();
         dataReport(map, pdjoList);//整理日志，且删除reids
         insertReport(pdjoList);//整理报表数据，入库
     }
@@ -132,6 +131,14 @@ public class CensusService implements ICensusService {
         List<Map<String, Object>> list = orderDao.getCustomer_id();
         for (Map<String, Object> map : list) {
             staticMap.put(map.get("material_url").toString(), map.get("customer_id"));
+        }
+    }
+
+    @Override
+    public void selectChannel_id() {
+        List<Map<String, Object>> list = orderDao.selectChannel_id();
+        for (Map<String, Object> map : list) {
+            staticChannelMap.put(map.get("adx_app_id").toString(), map.get("channel_id"));
         }
     }
 
@@ -154,7 +161,7 @@ public class CensusService implements ICensusService {
     /**
      * @param map
      */
-    private void dataReport(Map<String, String> map, List<BDPojo> bdPojoList) {
+    private void dataReport(Map<String, String> map, List<Pojo> bdPojoList) {
 
         ShardedJedis shardedJedis = shardedJedisPool.getResource();
         try {
@@ -189,7 +196,6 @@ public class CensusService implements ICensusService {
                     }
                     JSONObject json = null;
                     if (!(jsonObject.get("log_data") == null && "".equals(jsonObject.get("log_data").toString().trim()))) {
-                        System.err.println("key==" + key + "什么鬼=====" + jsonObject.toString());
                         json = JSONObject.parseObject(jsonObject.get("log_data").toString());
 
                     }
@@ -228,8 +234,8 @@ public class CensusService implements ICensusService {
 
     }
 
-    private void insertReport(List<BDPojo> pojoList) {
-        Map<String, BDPojo> bdPojoMap = new HashMap<>();
+    private void insertReport(List<Pojo> pojoList) {
+        Map<String, Pojo> bdPojoMap = new HashMap<>();
         Map<String, Integer> adx_request_numMap = new HashMap<>();
         Map<String, Integer> response_bid_success_numMap = new HashMap<>();
         Map<String, Integer> response_bid_fail_numMap = new HashMap<>();
@@ -237,54 +243,54 @@ public class CensusService implements ICensusService {
         Map<String, Integer> black_success_numMap = new HashMap<>();
         String md5Key = null;
         if (pojoList != null && pojoList.size() > 0) {
-            for (BDPojo bdPojo : pojoList) {
-                md5Key = MD5Util.MD5Encode(bdPojo.getSsp_app_id() + bdPojo.getSsp_adslot_id()
-                        + bdPojo.getAdx_app_id() + bdPojo.getAdx_adslot_id()
-                        + bdPojo.getAd_customer_id() + bdPojo.getAd_city_code()
-                        + bdPojo.getAd_channel_id() + bdPojo.getScene_id()
-                        + getHour() + getDay());
+            for (Pojo pojomd5 : pojoList) {
+                md5Key = MD5Util.MD5Encode(pojomd5.getSsp_app_id() + pojomd5.getSsp_adslot_id()
+                        + pojomd5.getAdx_app_id() + pojomd5.getAdx_adslot_id()
+                        + pojomd5.getAd_customer_id() + pojomd5.getAd_city_code()
+                        + staticChannelMap.get(pojomd5.getAdx_app_id()) + pojomd5.getScene_id()
+                        + pojomd5.getDate_hour() + pojomd5.getDate_day());
                 if (bdPojoMap.size() == 0 || bdPojoMap.get(md5Key) == null) {
-                    BDPojo pojo = new BDPojo();
-                    pojo.setSsp_app_id(bdPojo.getSsp_app_id());
-                    pojo.setSsp_adslot_id(bdPojo.getSsp_adslot_id());
-                    pojo.setAdx_app_id(bdPojo.getAdx_app_id());
-                    pojo.setAdx_adslot_id(bdPojo.getAdx_adslot_id());
-                    pojo.setAd_customer_id(bdPojo.getAd_customer_id());
-                    pojo.setAd_channel_id(bdPojo.getAd_channel_id());
-                    pojo.setDate_hour(getHour());
-                    pojo.setDate_day(getDay());
-                    pojo.setAd_serving_id(bdPojo.getAd_serving_id());
-                    pojo.setAd_city_code(bdPojo.getAd_city_code());
+                    Pojo pojo = new Pojo();
+                    pojo.setSsp_app_id(pojomd5.getSsp_app_id());
+                    pojo.setSsp_adslot_id(pojomd5.getSsp_adslot_id());
+                    pojo.setAdx_app_id(pojomd5.getAdx_app_id());
+                    pojo.setAdx_adslot_id(pojomd5.getAdx_adslot_id());
+                    pojo.setAd_customer_id(pojomd5.getAd_customer_id());
+                    pojo.setAd_channel_id(staticChannelMap.get(pojomd5.getAdx_app_id()).toString());
+                    pojo.setDate_hour(pojomd5.getDate_hour());
+                    pojo.setDate_day(pojomd5.getDate_day());
+                    pojo.setAd_serving_id(pojomd5.getAd_serving_id());
+                    pojo.setAd_city_code(pojomd5.getAd_city_code());
                     pojo.setMd5Key(md5Key);
-                    pojo.setScene_id(bdPojo.getScene_id());
+                    pojo.setScene_id(pojomd5.getScene_id());
                     bdPojoMap.put(md5Key, pojo);
                 }
 
 
                 if (adx_request_numMap != null && adx_request_numMap.get(md5Key) != null) {
-                    adx_request_numMap.put(md5Key, adx_request_numMap.get(md5Key) + bdPojo.getAdx_request_num());
+                    adx_request_numMap.put(md5Key, adx_request_numMap.get(md5Key) + pojomd5.getAdx_request_num());
                 } else {
-                    adx_request_numMap.put(md5Key, bdPojo.getAdx_request_num());
+                    adx_request_numMap.put(md5Key, pojomd5.getAdx_request_num());
                 }
                 if (response_bid_success_numMap != null && response_bid_success_numMap.get(md5Key) != null) {
-                    response_bid_success_numMap.put(md5Key, response_bid_success_numMap.get(md5Key) + bdPojo.getResponse_bid_success_num());
+                    response_bid_success_numMap.put(md5Key, response_bid_success_numMap.get(md5Key) + pojomd5.getResponse_bid_success_num());
                 } else {
-                    response_bid_success_numMap.put(md5Key, bdPojo.getResponse_bid_success_num());
+                    response_bid_success_numMap.put(md5Key, pojomd5.getResponse_bid_success_num());
                 }
                 if (response_bid_fail_numMap != null && response_bid_fail_numMap.get(md5Key) != null) {
-                    response_bid_fail_numMap.put(md5Key, response_bid_fail_numMap.get(md5Key) + bdPojo.getResponse_bid_fail_num());
+                    response_bid_fail_numMap.put(md5Key, response_bid_fail_numMap.get(md5Key) + pojomd5.getResponse_bid_fail_num());
                 } else {
-                    response_bid_fail_numMap.put(md5Key, bdPojo.getResponse_bid_fail_num());
+                    response_bid_fail_numMap.put(md5Key, pojomd5.getResponse_bid_fail_num());
                 }
                 if (return_success_numMap != null && return_success_numMap.get(md5Key) != null) {
-                    return_success_numMap.put(md5Key, return_success_numMap.get(md5Key) + bdPojo.getReturn_success_num());
+                    return_success_numMap.put(md5Key, return_success_numMap.get(md5Key) + pojomd5.getReturn_success_num());
                 } else {
-                    return_success_numMap.put(md5Key, bdPojo.getReturn_success_num());
+                    return_success_numMap.put(md5Key, pojomd5.getReturn_success_num());
                 }
                 if (black_success_numMap != null && black_success_numMap.get(md5Key) != null) {
-                    black_success_numMap.put(md5Key, black_success_numMap.get(md5Key) + bdPojo.getBlack_success_num());
+                    black_success_numMap.put(md5Key, black_success_numMap.get(md5Key) + pojomd5.getBlack_success_num());
                 } else {
-                    black_success_numMap.put(md5Key, bdPojo.getBlack_success_num());
+                    black_success_numMap.put(md5Key, pojomd5.getBlack_success_num());
                 }
 
             }
@@ -292,11 +298,11 @@ public class CensusService implements ICensusService {
             /**
              * 拼装入库对象
              */
-            List<BDPojo> bdPojoList = new ArrayList<>();
+            List<Pojo> bdPojoList = new ArrayList<>();
             if (bdPojoMap != null && bdPojoMap.size() > 0) {
-                for (Map.Entry<String, BDPojo> entry : bdPojoMap.entrySet()) {
+                for (Map.Entry<String, Pojo> entry : bdPojoMap.entrySet()) {
                     String key = entry.getKey();
-                    BDPojo bdPojo = entry.getValue();
+                    Pojo bdPojo = entry.getValue();
                     if (adx_request_numMap != null && adx_request_numMap.size() > 0 && adx_request_numMap.get(key) != null) {
                         bdPojo.setAdx_request_num(adx_request_numMap.get(key));
                     }
@@ -319,7 +325,7 @@ public class CensusService implements ICensusService {
              * 入库
              */
             if (bdPojoList != null && bdPojoList.size() > 0) {
-                for (BDPojo pojo : bdPojoList) {
+                for (Pojo pojo : bdPojoList) {
                     orderDao.insertOrUpdateAdx_Report(pojo);
                 }
             }
@@ -334,11 +340,11 @@ public class CensusService implements ICensusService {
      * @param
      * @param list
      */
-    private void getPojo(List<Object> list, String bd_pt, List<BDPojo> bdPojoList) {
+    private void getPojo(List<Object> list, String bd_pt, List<Pojo> bdPojoList) {
         String line = null;
         int listNum = list.size();
-        BDPojo bdPojo = new BDPojo();
-        BDPojo ptPojo = new BDPojo();
+        Pojo bdPojo = new Pojo();
+        Pojo ptPojo = new Pojo();
         for (int i = 0; i < listNum; i++) {
             line = list.get(i).toString();
             JSONObject jsonObject = JSONObject.parseObject(line);
@@ -377,7 +383,6 @@ public class CensusService implements ICensusService {
                     bdPojo.setAdx_app_id(json.get("app_id").toString());
                     JSONObject adslot_id = JSONObject.parseObject(json.get("slot").toString());
                     bdPojo.setAdx_adslot_id(adslot_id.get("adslot_id").toString());
-                    bdPojo.setAd_channel_id("BD");
                     bdPojo.setAd_serving_id("0");
                     bdPojo.setAdx_request_num(1);
 
@@ -386,7 +391,6 @@ public class CensusService implements ICensusService {
                         ptPojo.setAdx_adslot_id(json.get("adslot_id").toString());
                         ptPojo.setAd_serving_id(json.get("strategy_id").toString());
                         ptPojo.setAdx_app_id(json.get("app_id").toString());
-                        ptPojo.setAd_channel_id("PT");
                         ptPojo.setAdx_request_num(1);
                     }
 
@@ -399,6 +403,10 @@ public class CensusService implements ICensusService {
 //                if (staticMap.get(key) != null) {
                 //bd 判断是否成功，失败
                 if ("BD".equals(jsonObject.get("source_type"))) {
+                    String datetime = updateFormat(jsonObject.getString("create_time"));
+                    String[] date = datetime.split(" ");
+                    bdPojo.setDate_day(date[0]);
+                    bdPojo.setDate_hour(date[1]);
                     if (json == null || "1003".equals(json.get("code")) || "1001".equals(json.get("code"))) {
                         bdPojo.setResponse_bid_fail_num(1);
 
@@ -415,6 +423,10 @@ public class CensusService implements ICensusService {
                         }
                     }
                 } else if ("PT".equals(jsonObject.get("source_type"))) {
+                    String datetime = updateFormat(jsonObject.getString("create_time"));
+                    String[] date = datetime.split(" ");
+                    ptPojo.setDate_day(date[0]);
+                    ptPojo.setDate_hour(date[1]);
                     if (json == null || "1003".equals(json.get("code")) || "1001".equals(json.get("code"))) {
                         ptPojo.setResponse_bid_fail_num(1);
 
@@ -631,6 +643,19 @@ public class CensusService implements ICensusService {
         return minutes;
     }
 
+    private String updateFormat(String time) {
+        Calendar cal = Calendar.getInstance();
+        SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        try {
+            cal.setTime(sf.parse(time));//开始时间
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        SimpleDateFormat retrunsf = new SimpleDateFormat("yyyy-MM-dd HH");
+        String datetime = retrunsf.format(cal.getTime());
+        return datetime;
+    }
+
     /**
      * starttime-endTime >0
      * 判断要拿的文件
@@ -700,9 +725,9 @@ public class CensusService implements ICensusService {
 //        System.err.println(getMinute(start, end));
 //        System.err.println(getDateTime());
 
-        String fileName = "adapi_192.168.10.140_2018-05-08-18-28.log";
-        String[] files = fileName.split("_");
-        System.err.println(files[2].replace(".log", ""));
+//        String fileName = "adapi_192.168.10.140_2018-05-08-18-28.log";
+//        String[] files = fileName.split("_");
+//        System.err.println(files[2].replace(".log", ""));
 
     }
 
