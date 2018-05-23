@@ -1,5 +1,6 @@
 package com.racetime.xsad.service.impl;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -176,7 +177,9 @@ public class MediaFileValidateImpl implements MediaFileValidate{
 				}if(str[16]==""){
 					errorList.add("媒体库存排期,第"+(i+1)+"行,未获取到处达人群");
 				}if(str[17]==""){
-					errorList.add("媒体库存排期,第"+(i+1)+"行,未获取到CPM单价");
+					errorList.add("媒体库存排期,第"+(i+1)+"行,未获取到CPM");
+				}if(str[18] == ""){
+					errorList.add("媒体库存排期,第"+(i+1)+"行,未获取到媒体单价");
 				}
 			}
 			//验证百度渠道
@@ -237,21 +240,56 @@ public class MediaFileValidateImpl implements MediaFileValidate{
 				}if(str[4]==""){
 					errorList.add("媒体物料备案中,第"+(i+1)+"行,未获取到物料类型");
 				}if(str[5]==""){
-					errorList.add("媒体物料备案中,第"+(i+1)+"行,未获取到资源格式类型");
-				}if(str[6]==""){
 					errorList.add("媒体物料备案中,第"+(i+1)+"行,未获取到播放时长");
-				}if(str[7]==""){
+				}if(str[6]==""){
 					errorList.add("媒体物料备案中,第"+(i+1)+"行,未获取到图片宽");
-				}if(str[8]==""){
+				}if(str[7] == ""){
 					errorList.add("媒体物料备案中,第"+(i+1)+"行,未获取到图片高");
-				}if(str[9] == ""){
-					errorList.add("媒体物料备案中,第"+(i+1)+"行,未获取到图片大小");
-				//验证物料文件名是否在压缩包中
+				}if(str[8] == ""){
+					errorList.add("媒体物料备案中,第"+(i+1)+"行,未获取到物料大小");
+				}if(str[10] == ""){
+					errorList.add("媒体物料备案中,第"+(i+1)+"行,未获取到客户名称");
 				}if(str[0] != ""){
 					if(!FileOper.validateFile(descDir, str[0])){
 						errorList.add("媒体物料备案中,第"+(i+1)+"行,未在压缩包中获取到该物料");
 					}
 				}
+				//
+				if(!str[3].equals("")&& !str[0].equals("")&& !str[4].equals("")&&!str[5].equals("")&&!str[6].equals("")
+						&&!str[7].equals("")&&!str[8].equals("")&&!str[10].equals("")){
+					//获取广告位相关属性信息
+					Map<String,Object> adslot = mediaResDao.getAdslotInfoById(str[3]);
+					if(adslot != null){
+						//long fileSize = FileOper.getFileSize(new File(descDir+str[0]));
+						//获取该广告位最大物料大小
+						long adslot_filesize = Long.parseLong(adslot.get("max_size").toString());
+						int adslot_width = Integer.parseInt(adslot.get("width").toString());
+						int adslot_heigth = Integer.parseInt(adslot.get("height").toString());
+						String adslot_type = adslot.get("material_type").toString();
+						if(Integer.parseInt(str[8]) > adslot_filesize){
+							errorList.add("媒体物料备案中,第"+(i+1)+"行,上传物料文件大于该广告位支持的最大物料大小");
+						}
+						if(Integer.parseInt(str[6]) > adslot_width){
+							errorList.add("媒体物料备案中,第"+(i+1)+"行,上传物料宽大于广告位支持最大宽");
+						}
+						if(Integer.parseInt(str[7])> adslot_heigth){
+							errorList.add("媒体物料备案中,第"+(i+1)+"行,上传物料高大于广告位支持最大高");
+						}
+						if(!str[4].equals(adslot_type)){
+							errorList.add("媒体物料备案中,第"+(i+1)+"行,该广告位不支持此物料类型");
+						}
+						if(mediaResDao.getCustomerIdByName(str[10]) == null){
+							errorList.add("媒体物料备案中,第"+(i+1)+"行,客户名称未找到");
+						}
+					}else{
+						errorList.add("媒体物料备案中,第"+(i+1)+"行,广告位未在系统中找到");
+					}
+					
+					//if(mediaResDao.getFileSizeByAdslot(str[3]))
+				}
+				//
+				
+				
 			}
 			
 		} catch (IOException e) {

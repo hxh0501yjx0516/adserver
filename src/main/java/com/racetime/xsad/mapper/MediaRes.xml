@@ -197,12 +197,12 @@
     	select count(*) as count from pmp_resource where id = #{id}
  	 </selectKey>
  	 <if test="count==0">
- 	 	insert into pmp_resource (id,city_code,scene_id,device_num,name,pv,uv,ssp_adslot_id,ssp_app_id,cpm,sell_num,poi,address,createtime)
-  	 	values(#{id},#{city_code},#{scene_id},#{device_num},#{name},#{pv},#{uv},#{ssp_adslot_id},#{ssp_app_id},#{cpm},#{poi},#{address},now()) 
+ 	 	insert into pmp_resource (id,city_code,scene_id,device_num,name,pv,uv,ssp_adslot_id,ssp_app_id,cpm,sell_num,poi,address,createtime,price)
+  	 	values(#{id},#{city_code},#{scene_id},#{device_num},#{name},#{pv},#{uv},#{ssp_adslot_id},#{ssp_app_id},#{cpm},#{poi},#{address},now(),#{price}) 
  	 </if>
   	 <if test="count==1">
   	 	update pmp_resource set city_code = #{city_code},scene_id = #{scene_id},device_num= #{device_num},name=#{name},pv=#{pv},
-  	 		uv=#{uv},ssp_adslot_id=#{ssp_adslot_id},ssp_app_id=#{ssp_app_id},cpm=#{cpm},poi=#{poi},address=#{address},updatetime=now()
+  	 		uv=#{uv},ssp_adslot_id=#{ssp_adslot_id},ssp_app_id=#{ssp_app_id},cpm=#{cpm},poi=#{poi},address=#{address},updatetime=now(),price=#{price}
   	 		where id = #{id}
   	 </if>
   </insert>
@@ -265,13 +265,13 @@
   <!-- ===========================================物料============================================  -->
   <insert id="insertMaterial">
   		INSERT INTO ad_material
-            (name, material_url,title,remark,md5,type,dic_screen_id,
-           dic_adslot_id,dic_resformat_id,status,video_duration,ad_width,ad_height,ad_size,adx_adslot_id,createtime)
+            (name, material_url,title,remark,md5,type,
+            status,video_duration,ad_width,ad_height,ad_size,adx_adslot_id,customer_id,createtime)
      VALUES
     <foreach collection ="list" item="item" separator =",">
          (#{item.name},#{item.material_url},#{item.title},#{item.remark},#{item.md5},#{item.type},
-          #{item.dic_screen_id},#{item.dic_adslot_id},#{item.dic_resformat_id},'2',#{item.video_duration},
-          #{item.ad_width},#{item.ad_height},#{item.ad_size},#{item.adx_adslot_id},now())
+          '2',#{item.video_duration},
+          #{item.ad_width},#{item.ad_height},#{item.ad_size},#{item.adx_adslot_id},#{item.customer_id},now())
     </foreach>
    	ON DUPLICATE KEY UPDATE
    	updatetime = now(), 
@@ -301,21 +301,6 @@
 			WHEN #{item.material_url} THEN #{item.type}
 		</foreach>
     END,
-   dic_screen_id = CASE material_url
-   	   <foreach collection="list" item="item" index="index">
-			WHEN #{item.material_url} THEN #{item.dic_screen_id}
-		</foreach>
-    END,
-    dic_adslot_id = CASE material_url
-   	   <foreach collection="list" item="item" index="index">
-			WHEN #{item.material_url} THEN #{item.dic_adslot_id}
-		</foreach>
-    END,
-    dic_resformat_id = CASE material_url
-   	   <foreach collection="list" item="item" index="index">
-			WHEN #{item.material_url} THEN #{item.dic_resformat_id}
-		</foreach>
-    END,
     video_duration = CASE material_url
    	   <foreach collection="list" item="item" index="index">
 			WHEN #{item.material_url} THEN #{item.video_duration}
@@ -336,11 +321,29 @@
 			WHEN #{item.material_url} THEN #{item.adx_adslot_id}
 		</foreach>
     END,
+    customer_id = CASE material_url
+   	   <foreach collection="list" item="item" index="index">
+			WHEN #{item.material_url} THEN #{item.customer_id}
+		</foreach>
+    END,
  	ad_size = CASE material_url
   	<foreach collection="list" item="item" index="index">
 	 WHEN #{item.material_url} THEN #{item.ad_size}
 	</foreach>
     END
   </insert>
+  <select id="getAdslotInfoById" parameterType="String" resultType="Map">
+	select id,max_size,play_time, case material_type
+	when '1' then 'IMAGE'
+	else 'VEDIO'
+	end material_type
+	,width,height from adx_adslot where channel_adslot_id = #{adx_adslot_id}
+  </select>
+  <!--根据客户公司名称获取ID  -->
+  <select id="getCustomerIdByName" parameterType="String" resultType="String">
+  	  select id from ad_customer where company = #{name}
+  </select>
+  
+  
   
 </mapper>

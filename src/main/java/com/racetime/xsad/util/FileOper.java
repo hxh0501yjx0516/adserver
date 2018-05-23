@@ -130,6 +130,17 @@ public class FileOper {
 	    	}
 		   return false;
 	   }
+	   /**
+	     * 获取文件长度
+	     * @param file
+	     */
+	    public static long getFileSize(File file) {
+	        long fileSize = 0;
+	    	if (file.exists() && file.isFile()) {
+	            fileSize = file.length()/1024;
+	        }
+	    	return fileSize;
+	    }
 	    
 	    
 	

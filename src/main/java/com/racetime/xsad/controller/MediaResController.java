@@ -57,7 +57,7 @@ public class MediaResController {
 			return json;
 		}
 		String name=file.getOriginalFilename();
-        System.out.println(file.getSize());
+        //System.out.println(file.getSize());
 		if(ExcelFileUtil.uploadLocal("file.mediaMaterialzip",file.getInputStream(), name)){
         	//压缩包位置
         	String filePath = PropertiesUtil.getValue("file.mediaMaterialzip", FileUploadConstant.FILEPATHPROPERTIES)+File.separator+name;

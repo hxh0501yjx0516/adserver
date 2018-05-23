@@ -62,6 +62,10 @@ public interface MediaResDao {
 	
 	public int insertMaterial(List<Material> list);
 	
+	public Map<String,Object> getAdslotInfoById(String adx_adslot_id);
+	
+	public String getCustomerIdByName(String name);
+	
 	
 	
 	

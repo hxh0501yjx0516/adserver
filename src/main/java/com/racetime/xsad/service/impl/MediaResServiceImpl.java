@@ -41,6 +41,7 @@ import com.racetime.xsad.service.MediaResService;
 import com.racetime.xsad.util.DateUtil;
 import com.racetime.xsad.util.FileOper;
 import com.racetime.xsad.util.GetLatAndLngByBaidu;
+import com.racetime.xsad.util.MD5FileUtil;
 import com.racetime.xsad.util.MD5Util;
 import com.racetime.xsad.util.POIUtil;
 import com.racetime.xsad.util.PropertiesUtil;
@@ -154,13 +155,23 @@ public class MediaResServiceImpl implements MediaResService{
 			String targetDir = PropertiesUtil.getValue("file.mediaMaterialRelease", FileUploadConstant.FILEPATHPROPERTIES)+File.separator;
 			Map<String,List<String[]>> result = POIUtil.readExcel(filePath);
 			List<Material> material = getMaterial(result.get("0"));
-			if(material.size()>0)
-			mediaResDao.insertMaterial(material);
 			//copy file
 			for (int i = 0; i < material.size(); i++) {
+				String imageFileName = material.get(i).getName();
+				File imageFile = new File(imageFilePath+File.separator+imageFileName);
 				//System.out.println(targetDir+File.separator);
-				FileOper.copyFile(new File(imageFilePath+File.separator+material.get(i).getName()),targetDir+File.separator+material.get(i).getName());
+				if(material.get(i).getMd5().equals("")){
+					String suffix = imageFileName.substring(imageFileName.lastIndexOf(".") + 1);
+					String md5 = MD5FileUtil.getMD5(imageFile);
+					material.get(i).setMd5(md5);
+					FileOper.copyFile(imageFile,targetDir+File.separator+md5+"."+suffix);
+					material.get(i).setMaterial_url(md5+suffix);
+				}else{
+					FileOper.copyFile(imageFile,targetDir+File.separator+imageFileName);
+				}
 			}
+			if(material.size()>0)
+			mediaResDao.insertMaterial(material);
 			return true;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -282,6 +293,7 @@ public class MediaResServiceImpl implements MediaResService{
 				pmpDevice.setUv(str[16]);
 				//pmpDevice.setCpm(Double.parseDouble(str[17]));
 				pmpDevice.setCpm(Double.parseDouble(str[17]));
+				pmpDevice.setPrice(Double.parseDouble(str[18]));
 				pmpDevices.add(pmpDevice);
 			}
 		return pmpDevices;
@@ -314,28 +326,32 @@ public class MediaResServiceImpl implements MediaResService{
 			materialBean.setName(str[0]);
 			materialBean.setMaterial_url(str[1]);
 			materialBean.setTitle(str[2]);
-			materialBean.setAdx_adslot_id(str[3]);
+			materialBean.setAdx_adslot_id(mediaResDao.getAdslotInfoById(str[3]).get("id").toString());
 			materialBean.setType(str[4]);//物料类型
-			if(str[5].equals("L屏广告位")){
+			//materialBean.setVideo_duration(str[]);
+			/*if(str[5].equals("L屏广告位")){
 				materialBean.setDic_adslot_id("1");
 			}else if(str[5].equals("大屏广告位")){
 				materialBean.setDic_adslot_id("2");
 			}else if(str[5].equals("户外大屏广告位")){
 				materialBean.setDic_adslot_id("3");
-			}
+			}*/
 			//获取资源类型
-			List<Map<String,Object>> resformat = mediaResDao.getResFormat();
+			/*List<Map<String,Object>> resformat = mediaResDao.getResFormat();
 			for(Map<String,Object> res:resformat){
 				if(res.get("value").equals(str[6])){
 					materialBean.setDic_resformat_id(res.get("id").toString());
 				}
-			}
-			materialBean.setVideo_duration(str[7]);
-			materialBean.setAd_width(str[8]);
-			materialBean.setAd_height(str[9]);
-			materialBean.setAd_size(str[10]);
-			materialBean.setMd5(MD5Util.MD5Encode(str[0]+str[4]));
-			materialBean.setRemark(str[11]);
+			}*/
+			materialBean.setVideo_duration(str[5]);
+			materialBean.setAd_width(str[6]);
+			materialBean.setAd_height(str[7]);
+			materialBean.setAd_size(str[8]);
+			//materialBean.setCustomer_id();
+			materialBean.setMd5(str[9]);
+			//根据客户名称获取
+			materialBean.setCustomer_id(mediaResDao.getCustomerIdByName(str[10]));
+			//materialBean.setRemark(str[11]);
 			material.add(materialBean);
 		}
 		return material;
