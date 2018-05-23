@@ -382,11 +382,14 @@ public class CensusService implements ICensusService {
                     bdPojo.setAdx_request_num(1);
 
                 } else if ("PT".equals(jsonObject.get("source_type"))) {
-                    ptPojo.setAdx_adslot_id(json.get("adslot_id").toString());
-                    ptPojo.setAd_serving_id(json.get("strategy_id").toString());
-                    ptPojo.setAdx_app_id(json.get("app_id").toString());
-                    ptPojo.setAd_channel_id("PT");
-                    ptPojo.setAdx_request_num(1);
+                    if (json != null) {
+                        ptPojo.setAdx_adslot_id(json.get("adslot_id").toString());
+                        ptPojo.setAd_serving_id(json.get("strategy_id").toString());
+                        ptPojo.setAdx_app_id(json.get("app_id").toString());
+                        ptPojo.setAd_channel_id("PT");
+                        ptPojo.setAdx_request_num(1);
+                    }
+
                 }
             } else if (type == 6) {
 
@@ -479,6 +482,15 @@ public class CensusService implements ICensusService {
                         if (!"".equals(line)) {
                             json = JSONObject.parseObject(line);
                             if (map != null && map.size() > 0) {
+                                if (map.get(json.getString("request_id")) != null) {
+                                    map.get(json.getString("request_id")).add(json);
+                                } else {
+                                    Set<Object> set = new HashSet<>();
+                                    set.add(json);
+                                    map.put(json.getString("request_id"), set);
+
+                                }
+                            } else {
                                 Set<Object> set = new HashSet<>();
                                 set.add(json);
                                 map.put(json.getString("request_id"), set);
