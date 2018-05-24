@@ -4,8 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +30,7 @@ public class MediaFileValidateImpl implements MediaFileValidate{
 	@Override
 	public List<String> MediaRTBValidate(String filePath) {
 		List<String> errorList = new ArrayList<>();
+		List<Map<String,Object>> scenes =  mediaResDao.getScene();
 		try {
 			Map<String,List<String[]>> datas = new HashMap<>();
 			datas = POIUtil.readExcel(filePath);
@@ -46,8 +49,19 @@ public class MediaFileValidateImpl implements MediaFileValidate{
 				}
 				String cityAddress = str[7]+str[10];
 				if(GetLatAndLngByBaidu.getCoordinate(cityAddress)==null){
-					errorList.add("媒体资源明细中,第"+(i+1)+"行,未获取到该详细地址中的经纬度");
+					errorList.add("媒体资源明细中,第"+(i+1)+"行,未获取到该详细地址中的经纬度,请重新核对详细地址");
 				}
+				//判断二级场景是否符合规范
+				if(str[12] == ""){
+					errorList.add("媒体资源明细中,第"+(i+1)+"行,未获取到二级场景");
+				}
+				if(str[12] != ""){
+					if(!validateScene(scenes,str[12])){
+						errorList.add("媒体资源明细中,第"+(i+1)+"行,请核实二级场景信息");
+					}
+				}
+				
+				
 			}
 			//验证广告位信息是否正确
 			//Map<String,Object> param= null;
@@ -180,6 +194,12 @@ public class MediaFileValidateImpl implements MediaFileValidate{
 					errorList.add("媒体库存排期,第"+(i+1)+"行,未获取到CPM");
 				}if(str[18] == ""){
 					errorList.add("媒体库存排期,第"+(i+1)+"行,未获取到媒体单价");
+				}if(str[3] != ""){
+					String regEx1 = "^[a-zA-Z0-9_-]{5,}";
+					Pattern p = Pattern.compile(regEx1);
+					if(!p.matcher(str[3]).matches()){
+						errorList.add("媒体库存排期,第"+(i+1)+"行,售卖单元编号不符合格式规则");
+					}
 				}
 			}
 			//验证百度渠道
@@ -233,8 +253,6 @@ public class MediaFileValidateImpl implements MediaFileValidate{
 				String[] str = datas.get("0").get(i);
 				if(str[0]==""){
 					errorList.add("媒体物料备案中,第"+(i+1)+"行,未获取到物料名称");
-				}if(str[1] == ""){
-					errorList.add("媒体物料备案中,第"+(i+1)+"行,未获取到URL");
 				}if(str[3] == ""){
 					errorList.add("媒体物料备案中,第"+(i+1)+"行,未获取到渠道广告位ID");
 				}if(str[4]==""){
@@ -253,6 +271,10 @@ public class MediaFileValidateImpl implements MediaFileValidate{
 					if(!FileOper.validateFile(descDir, str[0])){
 						errorList.add("媒体物料备案中,第"+(i+1)+"行,未在压缩包中获取到该物料");
 					}
+				}if(str[9] != ""){
+					if(str[1]==""){
+						errorList.add("媒体物料备案中,第"+(i+1)+"行,未获取到物料URL");
+					}
 				}
 				//
 				if(!str[3].equals("")&& !str[0].equals("")&& !str[4].equals("")&&!str[5].equals("")&&!str[6].equals("")
@@ -262,10 +284,12 @@ public class MediaFileValidateImpl implements MediaFileValidate{
 					if(adslot != null){
 						//long fileSize = FileOper.getFileSize(new File(descDir+str[0]));
 						//获取该广告位最大物料大小
+						String fileExtension = str[0].substring(str[0].lastIndexOf(".")+1).toUpperCase();
 						long adslot_filesize = Long.parseLong(adslot.get("max_size").toString());
 						int adslot_width = Integer.parseInt(adslot.get("width").toString());
 						int adslot_heigth = Integer.parseInt(adslot.get("height").toString());
 						String adslot_type = adslot.get("material_type").toString();
+						String adslot_expand = adslot.get("expand").toString();
 						if(Integer.parseInt(str[8]) > adslot_filesize){
 							errorList.add("媒体物料备案中,第"+(i+1)+"行,上传物料文件大于该广告位支持的最大物料大小");
 						}
@@ -279,7 +303,10 @@ public class MediaFileValidateImpl implements MediaFileValidate{
 							errorList.add("媒体物料备案中,第"+(i+1)+"行,该广告位不支持此物料类型");
 						}
 						if(mediaResDao.getCustomerIdByName(str[10]) == null){
-							errorList.add("媒体物料备案中,第"+(i+1)+"行,客户名称未找到");
+							errorList.add("媒体物料备案中,第"+(i+1)+"行,客户名称未在系统中找到");
+						}
+						if(!adslot_expand.contains(fileExtension)){
+							errorList.add("媒体物料备案中,第"+(i+1)+"行,该物料不符合广告位要求文件格式");
 						}
 					}else{
 						errorList.add("媒体物料备案中,第"+(i+1)+"行,广告位未在系统中找到");
@@ -301,5 +328,20 @@ public class MediaFileValidateImpl implements MediaFileValidate{
 		return errorList;
 		
 	}
+	
+	public boolean validateScene(List<Map<String,Object>> scene,String sceneName){
+		for(Map<String,Object> map:scene){
+			if(map.get("name").equals(sceneName)){
+				return true;
+			}
+		}
+		return false;
+		
+		
+		
+	}
+	
+	
+	
 
 }

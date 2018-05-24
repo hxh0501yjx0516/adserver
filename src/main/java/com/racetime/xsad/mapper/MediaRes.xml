@@ -333,11 +333,14 @@
     END
   </insert>
   <select id="getAdslotInfoById" parameterType="String" resultType="Map">
-	select id,max_size,play_time, case material_type
+	select t.id,t.max_size,t.play_time, case t.material_type
 	when '1' then 'IMAGE'
 	else 'VEDIO'
 	end material_type
-	,width,height from adx_adslot where channel_adslot_id = #{adx_adslot_id}
+	,t.width,t.height,
+	t1.`value` as  expand
+	from adx_adslot t ,dic_resformat t1
+	where t.channel_adslot_id = #{adx_adslot_id} and t.dic_resformat = t1.id
   </select>
   <!--根据客户公司名称获取ID  -->
   <select id="getCustomerIdByName" parameterType="String" resultType="String">
