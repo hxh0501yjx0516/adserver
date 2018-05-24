@@ -208,7 +208,7 @@ public class CensusService implements ICensusService {
                         } else if ("1002".equals(json.get("code"))) {
                             String start = jsonObject.get("create_time").toString();
                             int minute = getMinute(start, getDateTime());
-                            if (minute > 10) {
+                            if (minute > 40) {
                                 if_6_or_7 = 7;
                                 break;
                             }
