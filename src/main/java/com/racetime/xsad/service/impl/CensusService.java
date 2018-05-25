@@ -7,6 +7,8 @@ import com.racetime.xsad.dao.OrderDao;
 import com.racetime.xsad.pojo.*;
 import com.racetime.xsad.service.ICensusService;
 import com.racetime.xsad.util.MD5Util;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
@@ -32,6 +34,9 @@ import java.util.*;
 @Service
 @PropertySource({"classpath:jdbc.properties"})
 public class CensusService implements ICensusService {
+
+    private Logger log = LoggerFactory.getLogger(CensusService.class);
+
     @Autowired
     Environment env;
     @Autowired
@@ -64,6 +69,7 @@ public class CensusService implements ICensusService {
             }
             Map<String, Integer> insertRedisMap = new HashMap<>();
             for (String launcCcount : launcCcountSet) {//遍历redis中取出的数据处理整合
+                log.info("计数===="+launcCcount);
                 JSONObject obj = JSONObject.parseObject(launcCcount);
                 String log_data = obj.get("log_data").toString();
                 JSONObject log_dataJSON = JSONObject.parseObject(log_data);
