@@ -69,7 +69,7 @@ public class CensusService implements ICensusService {
             }
             Map<String, Integer> insertRedisMap = new HashMap<>();
             for (String launcCcount : launcCcountSet) {//遍历redis中取出的数据处理整合
-                log.info("计数===="+launcCcount);
+                log.info("计数====" + launcCcount);
                 JSONObject obj = JSONObject.parseObject(launcCcount);
                 String log_data = obj.get("log_data").toString();
                 JSONObject log_dataJSON = JSONObject.parseObject(log_data);
@@ -87,12 +87,14 @@ public class CensusService implements ICensusService {
                 for (Map.Entry<String, Integer> entry : insertRedisMap.entrySet()) {
                     String key = entry.getKey();
                     Integer value = entry.getValue();
-
-                    if (shardedJedis.hget("execute_num", key) != null) {
-                        int count = Integer.parseInt(shardedJedis.hget("execute_num", key));
-                        shardedJedis.hset("execute_num", key, String.valueOf(value + count));
+                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHH");
+                    String datetime = simpleDateFormat.format(new Date());
+                    String countKey = key + "_" + datetime;
+                    if (shardedJedis.hget("execute_num", countKey) != null) {
+                        int count = Integer.parseInt(shardedJedis.hget("execute_num", countKey));
+                        shardedJedis.hset("execute_num", countKey, String.valueOf(value + count));
                     } else {
-                        shardedJedis.hset("execute_num", key, value.toString());
+                        shardedJedis.hset("execute_num", countKey, value.toString());
                     }
                 }
             }
