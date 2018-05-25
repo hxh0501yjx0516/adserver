@@ -26,7 +26,7 @@
 		  (SELECT 
 		    ssp.id ssp_adslot_id,
 		    ssp.price ssp_price,
-		    adx.channel_adslot_id adx_adslot_id,
+		    adx.id adx_adslot_id,
 		    adx.floor_price adx_price,
 		    app.id app_id,
 		    app.media_id 
