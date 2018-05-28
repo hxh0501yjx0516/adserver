@@ -56,6 +56,7 @@ public class CensusService implements ICensusService {
 
 
         ShardedJedis shardedJedis = shardedJedisPool.getResource();
+        JSONObject obj = null;
         try {
             Collection<Jedis> collection = shardedJedis.getAllShards();
             Iterator<Jedis> jedis = collection.iterator();
@@ -70,7 +71,7 @@ public class CensusService implements ICensusService {
             Map<String, Integer> insertRedisMap = new HashMap<>();
             for (String launcCcount : launcCcountSet) {//遍历redis中取出的数据处理整合
                 log.info("计数====" + launcCcount);
-                JSONObject obj = JSONObject.parseObject(launcCcount);
+                obj = JSONObject.parseObject(launcCcount);
                 String log_data = obj.get("log_data").toString();
                 JSONObject log_dataJSON = JSONObject.parseObject(log_data);
                 String strategy_id = log_dataJSON.get("strategy_id").toString();
@@ -100,6 +101,7 @@ public class CensusService implements ICensusService {
             }
 
         } catch (Exception e) {
+            System.err.println("obj==="+obj);
             e.printStackTrace();
         } finally
 
