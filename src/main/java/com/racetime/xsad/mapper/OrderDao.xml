@@ -119,25 +119,32 @@
             )
     </insert>
     <select id="getResource" resultType="java.util.Map">
-
         SELECT
-        pmpr.city_code AS city_code,
-        pmpr.scene_id AS scene_id,
-        pmpr.device_num,
-        pmpr.pv*pmpr.device_num*${num} AS pv,
-        pmpr.uv*pmpr.device_num AS uv,
-        pmpr.ssp_adslot_id AS adslot_id,
-        pmpr.ssp_app_id AS ad_app_id ,
-        pmprs.mdate AS put_time,
-        pmprs.stock AS num,
-        pmprs.id as pmp_resouce_stock_id
-        FROM
-        `pmp_resource` pmpr,
-        pmp_resource_stock pmprs
-        WHERE
-        pmpr.id = pmprs.pmp_resource_id
-        AND
-        pmprs.id IN
+            pmpr.city_code AS city_code,
+            pmpr.scene_id AS scene_id,
+            pmpr.device_num,
+            pmpr.pv * pmpr.device_num * ${num} AS pv,
+            pmpr.uv * pmpr.device_num AS uv,
+            pmpr.ssp_adslot_id AS adslot_id,
+            pmpr.ssp_app_id AS ad_app_id,
+            pmprs.mdate AS put_time,
+            ${num} AS num,
+            pmprs.id AS pmp_resouce_stock_id,
+            ad.id AS adx_adslot_id,
+            pmpr.price AS ssp_adslot_price,
+            par.sailed_cpm AS adx_adslot_price,
+            ad.floor_price AS adx_adslot_cpm,
+            pmpr.cpm AS ssp_adslot_cpm
+            FROM
+            `pmp_resource` pmpr,
+            pmp_resource_stock pmprs,
+            pmp_adxadslot_relation par,
+            adx_adslot ad
+            WHERE
+                 pmpr.id = pmprs.pmp_resource_id
+            AND par.pmp_resource_id = pmpr.id
+            AND ad.id = par.adx_adslot_id
+            AND  pmprs.id IN
         <foreach item="item" index="index" collection="list" open="("
                  separator="," close=")">
             #{item}
@@ -154,7 +161,13 @@
         put_time,
         pmp_resouce_stock_id,
         order_id,
-        creat_time
+        creat_time,
+        num,
+        adx_adslot_id,
+        ssp_adslot_price,
+        adx_adslot_price,
+        adx_adslot_cpm,
+        ssp_adslot_cpm
         )
         VALUES
         <foreach collection="list" item="map" index="index" separator=",">(
@@ -167,7 +180,14 @@
             #{map.put_time},
             #{map.pmp_resouce_stock_id},
             #{orderid},
-            now())
+            now(),
+            #{map.num},
+            #{map.adx_adslot_id},
+            #{map.ssp_adslot_price},
+            #{map.adx_adslot_price},
+            #{map.adx_adslot_cpm},
+            #{map.ssp_adslot_cpm}
+            )
         </foreach>
     </insert>
 
