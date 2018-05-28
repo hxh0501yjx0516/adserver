@@ -24,6 +24,7 @@ public class SyncTimer {
 	@Scheduled(cron = "0 5 0 * * ? ")
 	private void execute() {
 		priceSnapshootDao.execute();
+		priceSnapshootDao.pmpExecute();
 		logger.info(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())+"-->价格快照同步完成！");
 	}
 }
