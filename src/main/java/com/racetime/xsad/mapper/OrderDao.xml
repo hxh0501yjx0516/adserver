@@ -130,21 +130,19 @@
             pmprs.mdate AS put_time,
             ${num} AS num,
             pmprs.id AS pmp_resouce_stock_id,
-            ad.id AS adx_adslot_id,
+            par.adx_adslot_id AS adx_adslot_id,
             pmpr.price AS ssp_adslot_price,
             par.sailed_cpm AS adx_adslot_price,
-            ad.floor_price AS adx_adslot_cpm,
+            par.cpm AS adx_adslot_cpm,
             pmpr.cpm AS ssp_adslot_cpm
             FROM
             `pmp_resource` pmpr,
             pmp_resource_stock pmprs,
             pmp_adxadslot_relation par,
-            adx_adslot ad
-            WHERE
+             WHERE
                  pmpr.id = pmprs.pmp_resource_id
             AND par.pmp_resource_id = pmpr.id
-            AND ad.id = par.adx_adslot_id
-            AND  pmprs.id IN
+             AND  pmprs.id IN
         <foreach item="item" index="index" collection="list" open="("
                  separator="," close=")">
             #{item}
