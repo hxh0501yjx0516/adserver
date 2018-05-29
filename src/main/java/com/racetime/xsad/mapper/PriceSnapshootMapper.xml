@@ -60,14 +60,27 @@
 	</insert>
 	
 	<insert id="pmpExecute">
+		INSERT INTO ssp_report (
+		  app_id,
+		  media_id,
+		  ssp_adslot_id,
+		  ssp_price,
+		  adx_adslot_id,
+		  adx_price,
+		  return_success_num,
+		  DATETIME,
+		  resource_type
+		) 
 		SELECT 
-		  d.adslot_id ssp_adslot_id,
-		  ROUND(SUM(d.ssp_adslot_price * d.num), 2) ssp_adslot_price,
-		  d.adx_adslot_id,
-		  ROUND(SUM(d.adx_adslot_price * d.num), 2) adx_adslot_price,
-		  SUM(d.estimate_pv) return_success_num,
 		  p.id app_id,
-		  p.media_id 
+		  p.media_id,
+		  d.adslot_id ssp_adslot_id,
+		  ROUND(SUM(d.ssp_adslot_price * d.num), 2) ssp_price,
+		  d.adx_adslot_id,
+		  ROUND(SUM(d.adx_adslot_price * d.num), 2) adx_price,
+		  SUM(d.estimate_pv) return_success_num,
+		  DATE_SUB(CURDATE(), INTERVAL 1 DAY) DATETIME,
+		  1 
 		FROM
 		  pmp_order_detail d 
 		  LEFT JOIN ssp_adslot a 
@@ -78,6 +91,6 @@
 		    ON g.ssp_app_id = p.id 
 		WHERE d.put_time = DATE_SUB(CURDATE(), INTERVAL 1 DAY) 
 		GROUP BY d.adslot_id,
-		  d.adx_adslot_id 
+		  d.adx_adslot_id  
 	</insert>
 </mapper>
