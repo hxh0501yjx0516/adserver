@@ -12,17 +12,19 @@
       </if>
   </sql>
    
- <!--获取设备组库存  -->
+ <!--根据提库存  -->
   <select id="getPmpResource" parameterType="Map" resultType="Map">
-		SELECT t.id,t.name,t.ssp_adslot_id,t.city_code,t.scene_id,t.ssp_app_id,t.city_code,t.pv,t.uv,t.device_num,t.price,t.cpm from pmp_resource t 
-		  where
-		1=1
+		SELECT t.id,t.name,t.ssp_adslot_id,t.city_code,t.scene_id,t2.ssp_app_id,t.city_code,t.pv,t.uv,t.device_num,t.price,t.cpm from pmp_resource t,
+		ssp_devicegroup t2, ssp_adslot t3
+		where t.ssp_adslot_id = t3.id
+		and t2.id = t3.ssp_devicegroup_id
+		and t3.id = t.ssp_adslot_id
 		<!--  t.id = t1.pmp_resouce_id --> 
 		<if test="ssp_adslot_id != null and ssp_adslot_id !=''">  
        		and t.ssp_adslot_id =#{ssp_adslot_id}
     	</if>  
     	<if test="ssp_app_id != null and ssp_app_id != ''">  
-       		and t.ssp_app_id = #{ssp_app_id}
+       		and t2.ssp_app_id = #{ssp_app_id}
     	</if>
     	<if test="city_code != null and city_code.size()> 0 ">
     		and t.city_code in
@@ -138,9 +140,10 @@
    </select>
    <!--获取app下所有库存量  -->
    <select id="getAllAppStock"  resultType="Map">
- 	select t.ssp_app_id as app_id ,sum(t1.stock)as total from pmp_resource t, pmp_resource_stock t1 
-	where t.id = t1.pmp_resource_id 
-	GROUP BY t.ssp_app_id   
+ 	select t1.ssp_app_id as app_id ,sum(t3.stock) total from pmp_resource t,ssp_devicegroup t1, ssp_adslot t2,pmp_resource_stock t3
+	where t.ssp_adslot_id = t2.id and t2.ssp_devicegroup_id = t1.id
+	and t.id = t3.pmp_resource_id
+	GROUP BY t1.ssp_app_id 
    </select>
    
    <!--修改库存  -->

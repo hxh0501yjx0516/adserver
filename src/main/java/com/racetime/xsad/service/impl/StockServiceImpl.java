@@ -42,17 +42,17 @@ public class StockServiceImpl implements StockService{
 				value.put("uv", deviceInfo.get(i).get("uv"));
 				value.put("device_num", deviceInfo.get(i).get("device_num"));
 				value.put("id", deviceInfo.get(i).get("id"));
-				value.put("cpm", deviceInfo.get(i).get("cpm"));
-				value.put("price", deviceInfo.get(i).get("price"));
+				value.put("cpm", deviceInfo.get(i).get("cpm")); //下游CPM
+				value.put("price", deviceInfo.get(i).get("price")); //下游价格
 				try {
 					value.put("name", URLEncoder.encode(deviceInfo.get(i).get("name").toString(), "UTF-8"));
 				} catch (UnsupportedEncodingException e) {
 					e.printStackTrace();
 				}
 				value.put("city_code", deviceInfo.get(i).get("city_code"));
-				//获取该资源组在订单中的时间段
+				//获取该售卖单元在订单中的时间段
 				List<Map<String,Object>> orderInfo = stockDaoMapper.getOrderInfo(deviceInfo.get(i).get("id").toString());
-				//获取该该资源组下的库存和投放时间
+				//获取该售卖单元下的库存和投放时间
 				stockParam = new HashMap<>();
 				stockParam.put("pmp_resource_id", deviceInfo.get(i).get("id").toString());
 				if(param.get("sdate") !=null)
