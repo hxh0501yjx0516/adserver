@@ -7,6 +7,8 @@ import com.racetime.xsad.dao.OrderDao;
 import com.racetime.xsad.pojo.*;
 import com.racetime.xsad.service.ICensusService;
 import com.racetime.xsad.util.MD5Util;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
@@ -32,6 +34,9 @@ import java.util.*;
 @Service
 @PropertySource({"classpath:jdbc.properties"})
 public class CensusService implements ICensusService {
+
+    private Logger log = LoggerFactory.getLogger(CensusService.class);
+
     @Autowired
     Environment env;
     @Autowired
@@ -51,6 +56,7 @@ public class CensusService implements ICensusService {
 
 
         ShardedJedis shardedJedis = shardedJedisPool.getResource();
+        JSONObject obj = null;
         try {
             Collection<Jedis> collection = shardedJedis.getAllShards();
             Iterator<Jedis> jedis = collection.iterator();
@@ -64,7 +70,8 @@ public class CensusService implements ICensusService {
             }
             Map<String, Integer> insertRedisMap = new HashMap<>();
             for (String launcCcount : launcCcountSet) {//遍历redis中取出的数据处理整合
-                JSONObject obj = JSONObject.parseObject(launcCcount);
+                log.info("计数====" + launcCcount);
+                obj = JSONObject.parseObject(launcCcount);
                 String log_data = obj.get("log_data").toString();
                 JSONObject log_dataJSON = JSONObject.parseObject(log_data);
                 String strategy_id = log_dataJSON.get("strategy_id").toString();
@@ -81,17 +88,20 @@ public class CensusService implements ICensusService {
                 for (Map.Entry<String, Integer> entry : insertRedisMap.entrySet()) {
                     String key = entry.getKey();
                     Integer value = entry.getValue();
-
-                    if (shardedJedis.hget("execute_num", key) != null) {
-                        int count = Integer.parseInt(shardedJedis.hget("execute_num", key));
-                        shardedJedis.hset("execute_num", key, String.valueOf(value + count));
+                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHH");
+                    String datetime = simpleDateFormat.format(new Date());
+                    String countKey = key + "_" + datetime;
+                    if (shardedJedis.hget("execute_num", countKey) != null) {
+                        int count = Integer.parseInt(shardedJedis.hget("execute_num", countKey));
+                        shardedJedis.hset("execute_num", countKey, String.valueOf(value + count));
                     } else {
-                        shardedJedis.hset("execute_num", key, value.toString());
+                        shardedJedis.hset("execute_num", countKey, value.toString());
                     }
                 }
             }
 
         } catch (Exception e) {
+            System.err.println("obj==="+obj);
             e.printStackTrace();
         } finally
 
@@ -208,7 +218,7 @@ public class CensusService implements ICensusService {
                         } else if ("1002".equals(json.get("code"))) {
                             String start = jsonObject.get("create_time").toString();
                             int minute = getMinute(start, getDateTime());
-                            if (minute > 10) {
+                            if (minute > 40) {
                                 if_6_or_7 = 7;
                                 break;
                             }

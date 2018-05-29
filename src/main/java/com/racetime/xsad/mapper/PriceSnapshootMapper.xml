@@ -11,7 +11,8 @@
 		  adx_adslot_id,
 		  adx_price,
 		  return_success_num,
-		  DATETIME
+		  DATETIME,
+		  resource_type
 		) 
 		SELECT 
 		  a.app_id,
@@ -21,12 +22,13 @@
 		  a.adx_adslot_id,
 		  a.adx_price,
 		  b.return_success_num,
-		  DATE_SUB(CURDATE(), INTERVAL 1 DAY) 
+		  DATE_SUB(CURDATE(), INTERVAL 1 DAY) ,
+		  0
 		FROM
 		  (SELECT 
 		    ssp.id ssp_adslot_id,
 		    ssp.price ssp_price,
-		    adx.channel_adslot_id adx_adslot_id,
+		    adx.id adx_adslot_id,
 		    adx.floor_price adx_price,
 		    app.id app_id,
 		    app.media_id 
@@ -40,8 +42,9 @@
 		    AND ad.adx_adslot_id = adx.id 
 		    AND adx.state = 1 
 		    AND ssp.status = 1 
-		    and ssp.ssp_devicegroup_id = d.id 
-		    and d.ssp_app_id = app.id) a 
+		    AND app.resource_type=0
+		    AND ssp.ssp_devicegroup_id = d.id 
+		    AND d.ssp_app_id = app.id) a 
 		  LEFT JOIN 
 		    (SELECT 
 		      r.ssp_adslot_id,
@@ -53,6 +56,28 @@
 		    GROUP BY r.adx_adslot_id,
 		      r.ssp_adslot_id) b 
 		    ON a.ssp_adslot_id = b.ssp_adslot_id 
-		    AND b.adx_adslot_id = a.adx_adslot_id 
+		    AND b.adx_adslot_id = a.adx_adslot_id  
+	</insert>
+	
+	<insert id="pmpExecute">
+		SELECT 
+		  d.adslot_id ssp_adslot_id,
+		  ROUND(SUM(d.ssp_adslot_price * d.num), 2) ssp_adslot_price,
+		  d.adx_adslot_id,
+		  ROUND(SUM(d.adx_adslot_price * d.num), 2) adx_adslot_price,
+		  SUM(d.estimate_pv) return_success_num,
+		  p.id app_id,
+		  p.media_id 
+		FROM
+		  pmp_order_detail d 
+		  LEFT JOIN ssp_adslot a 
+		    ON d.adslot_id = a.id 
+		  LEFT JOIN ssp_devicegroup g 
+		    ON a.ssp_devicegroup_id = g.id 
+		  LEFT JOIN ssp_app p 
+		    ON g.ssp_app_id = p.id 
+		WHERE d.put_time = DATE_SUB(CURDATE(), INTERVAL 1 DAY) 
+		GROUP BY d.adslot_id,
+		  d.adx_adslot_id 
 	</insert>
 </mapper>
