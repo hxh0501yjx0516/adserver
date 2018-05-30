@@ -197,12 +197,12 @@
     	select count(*) as count from pmp_resource where id = #{id}
  	 </selectKey>
  	 <if test="count==0">
- 	 	insert into pmp_resource (id,city_code,scene_id,device_num,name,pv,uv,ssp_adslot_id,ssp_app_id,cpm,sell_num,poi,address,createtime,price)
-  	 	values(#{id},#{city_code},#{scene_id},#{device_num},#{name},#{pv},#{uv},#{ssp_adslot_id},#{ssp_app_id},#{cpm},#{poi},#{address},now(),#{price}) 
+ 	 	insert into pmp_resource (id,city_code,scene_id,device_num,name,pv,uv,ssp_adslot_id,cpm,sell_num,poi,address,createtime,price)
+  	 	values(#{id},#{city_code},#{scene_id},#{device_num},#{name},#{pv},#{uv},#{ssp_adslot_id},#{cpm},#{poi},#{address},now(),#{price}) 
  	 </if>
   	 <if test="count==1">
   	 	update pmp_resource set city_code = #{city_code},scene_id = #{scene_id},device_num= #{device_num},name=#{name},pv=#{pv},
-  	 		uv=#{uv},ssp_adslot_id=#{ssp_adslot_id},ssp_app_id=#{ssp_app_id},cpm=#{cpm},poi=#{poi},address=#{address},updatetime=now(),price=#{price}
+  	 		uv=#{uv},ssp_adslot_id=#{ssp_adslot_id},cpm=#{cpm},poi=#{poi},address=#{address},updatetime=now(),price=#{price}
   	 		where id = #{id}
   	 </if>
   </insert>
@@ -239,7 +239,8 @@
    					 adx_app_id = #{adx_app_id} and adx_adslot_id = #{adx_adslot_id} 
 	 	   </selectKey> 	
 	 	   <if test="id==0">
-	 	   	   insert into adx_app_devicegroup (adx_app_id,adx_adslot_id) values(#{adx_app_id},#{adx_adslot_id})
+	 	   	   <!--上游默认PMP设备组-11 -->
+	 	   	   insert into adx_app_devicegroup (adx_devicegroup_id,adx_app_id,adx_adslot_id) values(11,#{adx_app_id},#{adx_adslot_id})
 	 	   </if>
 	 	   <if test="id==1">
 	 	   		update adx_app_devicegroup set adx_app_id = '' where id = '0'
@@ -250,17 +251,19 @@
   	 <insert id="insertPmpAdxAdslotRelation" parameterType="com.racetime.xsad.model.PmpAdslotRelation">
 		  	<selectKey keyProperty="id" resultType="com.racetime.xsad.model.PmpAdslotRelation" order="BEFORE">
 				select count(id) as id from pmp_adxadslot_relation where pmp_resource_id = #{pmp_resource_id} and adx_adslot_id = #{adx_adslot_id}
-				and sailed_cpm = #{cpm}
 		  	</selectKey>
 			<if test="id==0">
-				insert into pmp_adxadslot_relation(price,pmp_resource_id,adx_adslot_id)values(#{cpm},#{pmp_resource_id},#{adx_adslot_id })
+				insert into pmp_adxadslot_relation(cpm,pmp_resource_id,adx_adslot_id,sailed_cpm)values(#{cpm},#{pmp_resource_id},#{adx_adslot_id },#{sailed_cpm})
 			</if>  	 
 			<if test="id==1">
-				update pmp_adxadslot_relation set price = #{cpm} where 
+				update pmp_adxadslot_relation set cpm = #{cpm},sailed_cpm = #{sailed_cpm} where 
 				pmp_resource_id = #{pmp_resource_id} and adx_adslot_id = #{adx_adslot_id}
-				
 			</if>
   	 </insert>
+	 <!--根据APPID  -->
+	 
+	 
+	 
 	  
   <!-- ===========================================物料============================================  -->
   <insert id="insertMaterial">

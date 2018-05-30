@@ -223,11 +223,17 @@ public class MediaFileValidateImpl implements MediaFileValidate{
 					if(channelStr[2] == ""){
 						errorList.add(str+",第"+(j+1)+"行,未获取到"+str+"广告位ID");
 					}
+					if(channelStr[3]== ""){
+						errorList.add(str+",第"+(j+1)+"行,未获取到"+str+"广告位名称");
+					}
 					if(channelStr[4] == ""){
-						errorList.add(str+",第"+(j+1)+"行,未获取到CPM单价");
+						errorList.add(str+",第"+(j+1)+"行,未获取到CPM");
 					}
 					if(channelStr[5] == ""){
-						errorList.add(str+",第"+(j+1)+"行,未获取到售卖单元编号");
+						errorList.add(str+",第"+(j+1)+"行,未获取到渠道媒体单价/份/天");
+					}
+					if(channelStr[6] == ""){
+						errorList.add(str+",第"+(j+1)+"行,未获取售卖单元编号");
 					}
 				}
 				w++;
@@ -276,7 +282,6 @@ public class MediaFileValidateImpl implements MediaFileValidate{
 						errorList.add("媒体物料备案中,第"+(i+1)+"行,未获取到物料URL");
 					}
 				}
-				//
 				if(!str[3].equals("")&& !str[0].equals("")&& !str[4].equals("")&&!str[5].equals("")&&!str[6].equals("")
 						&&!str[7].equals("")&&!str[8].equals("")&&!str[10].equals("")){
 					//获取广告位相关属性信息

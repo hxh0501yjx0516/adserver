@@ -11,6 +11,8 @@ public class PmpAdslotRelation {
 	private double cpm;
 	private String sell_num;
 	private String pmp_resource_id;
+	private double sailed_cpm;// 渠道售卖单价
+	
 	
 	public int getId() {
 		return id;
@@ -53,6 +55,12 @@ public class PmpAdslotRelation {
 	}
 	public void setPmp_resource_id(String pmp_resource_id) {
 		this.pmp_resource_id = pmp_resource_id;
+	}
+	public double getSailed_cpm() {
+		return sailed_cpm;
+	}
+	public void setSailed_cpm(double sailed_cpm) {
+		this.sailed_cpm = sailed_cpm;
 	}
 	
 	

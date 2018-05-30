@@ -265,7 +265,7 @@ public class MediaResServiceImpl implements MediaResService{
 			for (int i = 0; i < list.size(); i++) {
 				String[] str = list.get(i);
 				pmpDevice = new PmpDevice();
-				pmpDevice.setSsp_app_id(str[1]);
+				//pmpDevice.setSsp_app_id(str[1]);
 				pmpDevice.setSsp_adslot_id(str[2]);
 				pmpDevice.setId(str[3]);
 				pmpDevice.setName(str[4]);
@@ -308,9 +308,10 @@ public class MediaResServiceImpl implements MediaResService{
 				adslot.setAdx_app_id(str[0]);
 				adslot.setAdx_adslot_id(str[1]);
 				adslot.setChannel_name(str[3]);
-				adslot.setCpm(Double.parseDouble(str[4]));//媒体单价
+				adslot.setCpm(Double.parseDouble(str[4]));//CPM
+				adslot.setSailed_cpm(Double.parseDouble(str[5]));//单价
 				//根据售卖单元获取媒体资源主键
-				adslot.setPmp_resource_id(str[5]);
+				adslot.setPmp_resource_id(str[6]);
 				adx_adslot.add(adslot);
 			}
 		return adx_adslot;

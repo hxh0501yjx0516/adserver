@@ -1,6 +1,8 @@
 package com.racetime.xsad.util;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,6 +14,9 @@ import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.multipart.MultipartFile;
@@ -105,6 +110,43 @@ public class ExcelFileUtil {
          System.out.println("Excel文件生成成功...");  
     	return true;
     }
+    
+    public static boolean fileValidate(String filePath,String excelType) throws Exception{
+    	try{
+    		Workbook workbook = null;
+    		InputStream is = new FileInputStream(filePath);
+    		//读取Excel
+    		if(WDWUtil.isExcel2003(filePath)){
+    			workbook = new HSSFWorkbook(is);
+    		}else{
+    			workbook = new XSSFWorkbook(is);
+    		}
+    		Sheet sheet = workbook.getSheetAt(0);  
+    		String sheetName = sheet.getSheetName();
+    		if(excelType.equals("material")){
+    			if("物料备案".equals(sheetName)){
+    				return true;
+    			}
+    		}else if(excelType.equals("rtb")){
+    			if("媒体资源明细".equals(sheetName)){
+    				return true;
+    			}
+    		}else if(excelType.equals("pmp")){
+    			if("媒体库存排期".equals(sheetName)){
+    				return true;
+    			}
+    		}
+    	}catch(Exception e){
+    		e.printStackTrace();
+    	}
+    	return false;
+    }
+    public static void main(String[] args) throws Exception {
+    	System.out.println(ExcelFileUtil.fileValidate("D://平台模板-PMP资源备案.xlsx", "pmp"));
+	}
+    
+    
+    
     
     
     

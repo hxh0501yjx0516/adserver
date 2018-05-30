@@ -77,6 +77,11 @@ public class MediaResController {
 	        	String zipPath = descDir+name.substring(name.lastIndexOf('\\')+1, name.lastIndexOf('.'));
 	        	String excelName = FileOper.getFileDirExcel(zipPath);
 	        	if(excelName !=null){
+	        		//验证模板
+	        		if(!ExcelFileUtil.fileValidate(zipPath+File.separator+excelName, "material")){
+	        			json = getResponse(500,"","文件上传文件模板不正确");
+	        			return json;
+	        		}
 	        		List<String> errorList = mediaFileValidate.MediaMediaMaterial(zipPath+File.separator+excelName,zipPath);
 	            	if(errorList.size()>0){
 	     				json = getResponse(500,errorList,"文件内容不符合格式要求");
@@ -115,6 +120,10 @@ public class MediaResController {
         try{
         	if(ExcelFileUtil.uploadLocal("file.platform",file.getInputStream(), name)){
         		String filePath = PropertiesUtil.getValue("file.platform", FileUploadConstant.FILEPATHPROPERTIES)+File.separator+name;
+        		if(!ExcelFileUtil.fileValidate(filePath, "rtb")){
+        			json = getResponse(500,"","文件上传文件模板不正确");
+        			return json;
+        		}
         		List<String>  errorList = mediaFileValidate.MediaRTBValidate(filePath);
     			if(errorList.size()>0){
     				json = getResponse(500,errorList,"文件内容不符合格式要求");
@@ -153,7 +162,10 @@ public class MediaResController {
         try{
         	if(ExcelFileUtil.uploadLocal("file.platform",file.getInputStream(), name)){
         		String filePath = PropertiesUtil.getValue("file.platform", FileUploadConstant.FILEPATHPROPERTIES)+File.separator+name;
-        		//判断上传文件是否满足导入条件
+        		if(!ExcelFileUtil.fileValidate(filePath, "pmp")){
+        			json = getResponse(500,"","文件上传文件模板不正确");
+        			return json;
+        		}
         		//导入文件验证是否满足需求
         		 List<String> errorList = mediaFileValidate.MediaPMPValidate(filePath);
 	   			 if(errorList.size()>0){
