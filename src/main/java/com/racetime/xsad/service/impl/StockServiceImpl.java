@@ -35,8 +35,8 @@ public class StockServiceImpl implements StockService{
 			Map<String,Object> stockParam = null;
 			for (int i = 0; i < deviceInfo.size(); i++) {
 				Map<String,Object> value = new HashMap<>();
-				value.put("app_id", deviceInfo.get(i).get("ssp_app_id"));
-				value.put("adslot_id", deviceInfo.get(i).get("ssp_adslot_id"));
+				value.put("ssp_app_id", deviceInfo.get(i).get("ssp_app_id"));//下游appid
+				value.put("ssp_adslot_id", deviceInfo.get(i).get("ssp_adslot_id"));//下游广告位ID
 				value.put("scene_id", deviceInfo.get(i).get("scene_id"));
 				value.put("pv", deviceInfo.get(i).get("pv"));
 				value.put("uv", deviceInfo.get(i).get("uv"));
@@ -44,6 +44,7 @@ public class StockServiceImpl implements StockService{
 				value.put("id", deviceInfo.get(i).get("id"));
 				value.put("cpm", deviceInfo.get(i).get("cpm")); //下游CPM
 				value.put("price", deviceInfo.get(i).get("price")); //下游价格
+				value.put("adx_adslot_id",deviceInfo.get(i).get("adx_adslot_id")); //上游广告位ID
 				try {
 					value.put("name", URLEncoder.encode(deviceInfo.get(i).get("name").toString(), "UTF-8"));
 				} catch (UnsupportedEncodingException e) {
