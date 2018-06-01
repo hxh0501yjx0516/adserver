@@ -15,7 +15,7 @@
  <!--根据提库存  -->
   <select id="getPmpResource" parameterType="Map" resultType="Map">
 		SELECT t.id,t.name,t.ssp_adslot_id,t4.city_code,t5.scene_id,t2.ssp_app_id,t.pv,t.uv,t.device_num,t.price,t.cpm,t7.adx_adslot_id from pmp_resource t,
-		ssp_devicegroup t2, ssp_adslot t3,pmp_resource_city t4, pmp_resource_scene t5,ssp_app t6,adslot_relation t7
+		ssp_devicegroup t2, ssp_adslot t3,pmp_resource_city t4, pmp_resource_scene t5,ssp_app t6,adslot_relation t7,adx_app_devicegroup t8,adx_app t9
 		where t.ssp_adslot_id = t3.id
 		and t2.id = t3.ssp_devicegroup_id
 		and t3.id = t.ssp_adslot_id
@@ -23,6 +23,8 @@
 		and t4.pmp_resource_id = t.id
 		and t5.pmp_resource_id = t.id
 		and t7.ssp_adslot_id = t.ssp_adslot_id
+		and t7.adx_adslot_id = t8.adx_adslot_id
+		and t8.adx_app_id = t9.id
 		<!--  t.id = t1.pmp_resouce_id --> 
 		<if test="ssp_adslot_id != null and ssp_adslot_id !=''">  
        		and t.ssp_adslot_id =#{ssp_adslot_id}
@@ -43,7 +45,7 @@
         	</foreach>
     	</if>
     	<if test="channel_id != null and channel_id != ''">  
-       		and t6.channel_id = #{channel_id}
+       		and t9.channel_id = #{channel_id}
     	</if>
 		 <include refid="findPmpStock" />
   </select>
