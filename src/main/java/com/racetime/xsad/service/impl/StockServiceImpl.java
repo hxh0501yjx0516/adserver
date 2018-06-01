@@ -28,7 +28,7 @@ public class StockServiceImpl implements StockService{
 	private StockDaoMapper stockDaoMapper;
 	
 	@Override
-	public String getStockInfo(Map<String, Object> param) {
+	public String getStockInfoByAdx(Map<String, Object> param) {
 		List<Map<String,Object>> json = new ArrayList<>();
 		List<Map<String,Object>> deviceInfo = stockDaoMapper.getPmpResource(param);
 		if(deviceInfo != null && deviceInfo.size() >0){
@@ -163,34 +163,6 @@ public class StockServiceImpl implements StockService{
 			json.setData("");
 		}
 		
-		/*List<Map<String,Object>> resouceDateInfo = stockDaoMapper.getPmpResouceDatas(param);
-		for (int i = 0; i < resouceDateInfo.size(); i++) {
-			//获取该资源组ID和日期
-			Map<String,Object> orderInfo = stockDaoMapper.getOrderInfo(resouceDateInfo.get(i).get("pmp_resource_id").toString());
-			if(orderInfo != null){
-				//该资源组投放总使用数
-				int total = Integer.parseInt(orderInfo.get("stock").toString());
-				long datetime = Long.valueOf(resouceDateInfo.get(i).get("mdate").toString().replaceAll("-",""));
-				//该资源组投放日期
-				long end_time = Long.valueOf(orderInfo.get("end_time").toString().replaceAll("-",""));
-				long start_time = Long.valueOf(orderInfo.get("start_time").toString().replaceAll("-",""));
-				if(datetime>= start_time && datetime<=end_time && Integer.parseInt(stock) > total){
-					paramIds.add(resouceDateInfo.get(i).get("pmp_resource_stock_id").toString());
-				}else if(datetime>= start_time && datetime<=end_time && Integer.parseInt(stock) < total){
-					result.add(resouceDateInfo.get(i).get("pmp_resource_stock_id").toString());
-				}
-			}else{
-				
-				paramIds.add(resouceDateInfo.get(i).get("pmp_resource_stock_id").toString());
-			}
-		}
-		if(paramIds.size()>0){
-			Map<String,Object> updateParam = new HashMap<>();
-			updateParam.put("list", paramIds);
-			updateParam.put("stock", stock);
-			k = stockDaoMapper.updatePmpResouceStock(updateParam);
-		}*/
-		//System.out.println(k);
 		return json;
 	}
 	/**
@@ -215,22 +187,69 @@ public class StockServiceImpl implements StockService{
 					}
 					
 				}
-				/*//该资源组投放总使用数
-				int total = Integer.parseInt(orderInfo.get("stock").toString());
-				long datetime = Long.valueOf(resouceDateInfo.get(i).get("mdate").toString().replaceAll("-",""));
-				//该资源组投放日期
-				long end_time = Long.valueOf(orderInfo.get("end_time").toString().replaceAll("-",""));
-				long start_time = Long.valueOf(orderInfo.get("start_time").toString().replaceAll("-",""));
-				if(datetime>= start_time && datetime<=end_time && stock < total){
-					//return true;
-					ids.add(Integer.parseInt(resouceDateInfo.get(i).get("pmp_resource_stock_id").toString()));
-				}*/
-				
-				
-				
-				
 		}
 		return ids;
+	}
+
+	@Override
+	public String getStockInfoSsp(Map<String, Object> param) {
+		List<Map<String,Object>> json = new ArrayList<>();
+		List<Map<String,Object>> deviceInfo = stockDaoMapper.getPmpResourceBySSP(param);
+		if(deviceInfo != null && deviceInfo.size() >0){
+			Map<String,Object> stockParam = null;
+			for (int i = 0; i < deviceInfo.size(); i++) {
+				Map<String,Object> value = new HashMap<>();
+				value.put("ssp_app_id", deviceInfo.get(i).get("ssp_app_id"));//下游appid
+				value.put("ssp_adslot_id", deviceInfo.get(i).get("ssp_adslot_id"));//下游广告位ID
+				value.put("scene_id", deviceInfo.get(i).get("scene_id"));
+				value.put("pv", deviceInfo.get(i).get("pv"));
+				value.put("uv", deviceInfo.get(i).get("uv"));
+				value.put("device_num", deviceInfo.get(i).get("device_num"));
+				value.put("id", deviceInfo.get(i).get("id"));
+				value.put("cpm", deviceInfo.get(i).get("cpm")); //下游CPM
+				value.put("price", deviceInfo.get(i).get("price")); //下游价格
+				try {
+					value.put("name", URLEncoder.encode(deviceInfo.get(i).get("name").toString(), "UTF-8"));
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				}
+				value.put("city_code", deviceInfo.get(i).get("city_code"));
+				//获取该售卖单元在订单中的时间段
+				List<Map<String,Object>> orderInfo = stockDaoMapper.getOrderInfo(deviceInfo.get(i).get("id").toString());
+				//获取该售卖单元下的库存和投放时间
+				stockParam = new HashMap<>();
+				stockParam.put("pmp_resource_id", deviceInfo.get(i).get("id").toString());
+				if(param.get("sdate") !=null)
+				stockParam.put("sdate", param.get("sdate").toString());
+				if((param.get("edate") !=null))
+				stockParam.put("edate", param.get("edate").toString());
+				List<Map<String,Object>> stockInfo = stockDaoMapper.getPmpResouceStock(stockParam);
+				Map<String,Object> mdate = new TreeMap<String,Object>();
+				//组装mdate
+				for (int j = 0; j < stockInfo.size(); j++) {
+					PmpResource source = new PmpResource();
+					source.setId(Integer.parseInt(stockInfo.get(j).get("id").toString()));
+					source.setTotal(Integer.parseInt(stockInfo.get(j).get("stock").toString()));
+					if(orderInfo.size()>0){
+						for (int k = 0; k < orderInfo.size(); k++) {
+							if(stockInfo.get(j).get("mdate").toString().replaceAll("-","").equals(orderInfo.get(k).get("put_time").toString().replaceAll("-", ""))){
+								source.setUsed(Integer.parseInt(orderInfo.get(k).get("stock").toString()));
+							}
+						}
+					}else{
+						source.setUsed(0);
+					}
+					
+					mdate.put(stockInfo.get(j).get("mdate").toString(),source);
+				}
+				value.put("mdate", mdate);
+				json.add(value);
+			}
+		}else{
+			return "0";
+		}
+		System.out.println(new Gson().toJson(json));
+		return new Gson().toJson(json);
 	}
 	
 	

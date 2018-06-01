@@ -5,7 +5,10 @@ import java.util.Map;
 
 public interface StockDaoMapper {
 	
+	
 	public List<Map<String,Object>> getPmpResource(Map<String,Object> map);
+	
+	public List<Map<String,Object>> getPmpResourceBySSP(Map<String,Object> map);
 	
 	public List<Map<String,Object>> getOrderInfo(String pmp_resource_id);
 	

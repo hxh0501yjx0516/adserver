@@ -12,10 +12,10 @@
       </if>
   </sql>
    
- <!--根据提库存  -->
+ <!--根据上游提供库存信息  -->
   <select id="getPmpResource" parameterType="Map" resultType="Map">
-		SELECT t.id,t.name,t.ssp_adslot_id,t4.city_code,t5.scene_id,t2.ssp_app_id,t.pv,t.uv,t.device_num,t.price,t.cpm,t7.adx_adslot_id from pmp_resource t,
-		ssp_devicegroup t2, ssp_adslot t3,pmp_resource_city t4, pmp_resource_scene t5,ssp_app t6,adslot_relation t7,adx_app_devicegroup t8,adx_app t9
+		SELECT t.id,t.name,t.ssp_adslot_id,t4.city_code,t5.scene_id,t2.ssp_app_id,t.pv,t.uv,t.device_num,t10.sailed_cpm as price,t10.cpm,t7.adx_adslot_id from pmp_resource t,
+		ssp_devicegroup t2, ssp_adslot t3,pmp_resource_city t4, pmp_resource_scene t5,ssp_app t6,adslot_relation t7,adx_app_devicegroup t8,adx_app t9,pmp_adxadslot_relation t10
 		where t.ssp_adslot_id = t3.id
 		and t2.id = t3.ssp_devicegroup_id
 		and t3.id = t.ssp_adslot_id
@@ -25,12 +25,11 @@
 		and t7.ssp_adslot_id = t.ssp_adslot_id
 		and t7.adx_adslot_id = t8.adx_adslot_id
 		and t8.adx_app_id = t9.id
+		and t.id = t10.pmp_resource_id
+		and t10.adx_adslot_id = t8.adx_adslot_id
 		<!--  t.id = t1.pmp_resouce_id --> 
-		<if test="ssp_adslot_id != null and ssp_adslot_id !=''">  
-       		and t.ssp_adslot_id =#{ssp_adslot_id}
-    	</if>  
-    	<if test="ssp_app_id != null and ssp_app_id != ''">  
-       		and t2.ssp_app_id = #{ssp_app_id}
+    	<if test="adx_app_id != null and adx_app_id != ''">  
+       		and t9.id = #{adx_app_id}
     	</if>
     	<if test="city_code != null and city_code.size()> 0 ">
     		and t4.city_code in
@@ -49,6 +48,36 @@
     	</if>
 		 <include refid="findPmpStock" />
   </select>
+  
+  <!--根据下游参数信息获取广告位  -->
+   <select id="getPmpResourceBySSP" parameterType="Map" resultType="Map">
+		  select t.id,t.name,t.ssp_adslot_id,t1.city_code,t2.scene_id,t3.ssp_app_id,t.pv,t.uv,t.device_num,t.price,t.cpm
+		  from pmp_resource t, pmp_resource_city t1,pmp_resource_scene t2,ssp_devicegroup t3,ssp_adslot t4
+		  where t.id = t1.pmp_resource_id 
+		  and t.id = t2.pmp_resource_id
+		  and t3.id = t4.ssp_devicegroup_id
+		  and t4.id = t.ssp_adslot_id
+		  <if test="ssp_app_id != null and ssp_app_id != ''">  
+       		and t3.ssp_app_id = #{ssp_app_id}
+    	 </if>
+    	 <if test="city_code != null and city_code.size()> 0 ">
+    		and t1.city_code in
+    		<foreach collection="city_code" index="index" item="item" open="(" separator="," close=")">
+          	     #{item}
+        	</foreach>
+    	</if>
+    	<if test="scene_id != null and scene_id.size()>0 ">
+    		and t2.scene_id in 
+    		<foreach collection="scene_id" index="index" item="item" open="(" separator="," close=")">
+          	     #{item}
+        	</foreach>
+    	</if>
+    	 <if test="ssp_adslot_id != null and ssp_adslot_id != ''">  
+       		and t.ssp_adslot_id = #{ssp_adslot_id}
+    	 </if>
+    	
+   		 <include refid="findPmpStock" />
+   </select>
   <!--获取订单时间和投放份数  -->
   <select id="getOrderInfo" resultType="Map" parameterType="String">
 	<!-- select t1.num as stock,min(t.put_time) as start_time ,max(t.put_time) as end_time
