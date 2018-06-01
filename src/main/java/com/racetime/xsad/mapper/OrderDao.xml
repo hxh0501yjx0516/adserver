@@ -47,6 +47,7 @@
         WHERE
         pr.id = prs.pmp_resource_id
         AND par.pmp_resource_id = pr.id
+        AND par.adx_adslot_id =#{adx_adslot_id}
         AND prs.id IN
         <foreach item="item" index="index" collection="list" open="("
                  separator="," close=")">
@@ -120,13 +121,10 @@
     </insert>
     <select id="getResource" resultType="java.util.Map">
         SELECT
-            pmpr.city_code AS city_code,
-            pmpr.scene_id AS scene_id,
             pmpr.device_num,
             pmpr.pv * pmpr.device_num * ${num} AS pv,
             pmpr.uv * pmpr.device_num AS uv,
             pmpr.ssp_adslot_id AS adslot_id,
-            pmpr.ssp_app_id AS ad_app_id,
             pmprs.mdate AS put_time,
             ${num} AS num,
             pmprs.id AS pmp_resouce_stock_id,
@@ -138,10 +136,11 @@
             FROM
             `pmp_resource` pmpr,
             pmp_resource_stock pmprs,
-            pmp_adxadslot_relation par,
+            pmp_adxadslot_relation par
              WHERE
                  pmpr.id = pmprs.pmp_resource_id
             AND par.pmp_resource_id = pmpr.id
+             AND  par.adx_adslot_id=#{adx_adslot_id}
              AND  pmprs.id IN
         <foreach item="item" index="index" collection="list" open="("
                  separator="," close=")">
@@ -171,8 +170,8 @@
         <foreach collection="list" item="map" index="index" separator=",">(
             (SELECT REPLACE(UUID(), '-', '') AS order_detail_id),
             #{map.adslot_id},
-            #{map.city_code},
-            #{map.scene_id},
+            #{city_code},
+            #{scene_ids},
             #{map.pv},
             #{map.uv},
             #{map.put_time},
@@ -266,4 +265,45 @@
             md5Key=#{pojo.md5Key}
         </if>
     </update>
+
+    <select id="getResourceId" resultType="java.lang.String">
+        SELECT DISTINCT
+            (prs.pmp_resource_id) AS resoure_id
+        FROM
+            `pmp_resource_stock` prs
+
+         WHERE id IN
+        <foreach item="item" index="index" collection="list" open="("
+                 separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+    <select id="getScene_id" resultType="java.lang.String">
+        SELECT
+        GROUP_CONCAT(
+        DISTINCT scene_id SEPARATOR ','
+        ) scene_id
+        FROM
+        `pmp_resource_scene`
+        WHERE
+        pmp_resource_id IN
+        <foreach item="item" index="index" collection="list" open="("
+                 separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+    <select id="getCity_code" resultType="java.lang.String">
+        SELECT
+        GROUP_CONCAT(
+        DISTINCT city_code SEPARATOR ','
+        ) city_code
+        FROM
+        `pmp_resource_city`
+        WHERE
+        pmp_resource_id IN
+        <foreach item="item" index="index" collection="list" open="("
+                 separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
 </mapper>
