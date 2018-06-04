@@ -46,7 +46,7 @@ public class StockController {
 	
 	@ResponseBody
 	@RequestMapping("/ssp")
-	public String getStockbySSP(String app_id,String adslot_id,String city_code,String sdate,String edate,String scene_id){
+	public String getStockbySSP(String app_id,String adslot_id,String city_code,String sdate,String edate,String scene_id,String media_id){
 		Map<String,Object> param = new HashMap<>();
 		param.put("ssp_adslot_id", adslot_id);
 		param.put("ssp_app_id", app_id);
@@ -58,6 +58,7 @@ public class StockController {
 		}
 		param.put("sdate", sdate);
 		param.put("edate", edate);
+		param.put("media_id", media_id);
 		return stockService.getStockInfoSsp(param);
 		
 	}

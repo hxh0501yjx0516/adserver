@@ -52,11 +52,12 @@
   <!--根据下游参数信息获取广告位  -->
    <select id="getPmpResourceBySSP" parameterType="Map" resultType="Map">
 		  select t.id,t.name,t.ssp_adslot_id,t1.city_code,t2.scene_id,t3.ssp_app_id,t.pv,t.uv,t.device_num,t.price,t.cpm
-		  from pmp_resource t, pmp_resource_city t1,pmp_resource_scene t2,ssp_devicegroup t3,ssp_adslot t4
+		  from pmp_resource t, pmp_resource_city t1,pmp_resource_scene t2,ssp_devicegroup t3,ssp_adslot t4,ssp_app t5
 		  where t.id = t1.pmp_resource_id 
 		  and t.id = t2.pmp_resource_id
 		  and t3.id = t4.ssp_devicegroup_id
 		  and t4.id = t.ssp_adslot_id
+		  and t3.ssp_app_id = t5.id
 		  <if test="ssp_app_id != null and ssp_app_id != ''">  
        		and t3.ssp_app_id = #{ssp_app_id}
     	 </if>
@@ -75,7 +76,10 @@
     	 <if test="ssp_adslot_id != null and ssp_adslot_id != ''">  
        		and t.ssp_adslot_id = #{ssp_adslot_id}
     	 </if>
-    	
+		 <if test="media_id != null and media_id != ''">  
+       		and t5.media_id = #{media_id}
+    	 </if>
+		    	
    		 <include refid="findPmpStock" />
    </select>
   <!--获取订单时间和投放份数  -->
