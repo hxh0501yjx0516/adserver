@@ -33,6 +33,7 @@ import com.racetime.xsad.service.MediaResService;
 import com.racetime.xsad.util.ExcelFileUtil;
 import com.racetime.xsad.util.FileOper;
 import com.racetime.xsad.util.MD5FileUtil;
+import com.racetime.xsad.util.POIUtil;
 import com.racetime.xsad.util.PropertiesUtil;
 
 /**
@@ -165,7 +166,7 @@ public class MediaResController {
 		Integer year = cal.get(cal.YEAR);
 		Integer moth = cal.get(cal.MONTH)+1;
 		Integer day = cal.get(cal.DAY_OF_MONTH);
-		String name= year+""+moth+""+day;
+		String name= year+""+moth+""+day+POIUtil.getExtensionName(file.getOriginalFilename());
 		//String name=file.getOriginalFilename();
         try{
         	if(ExcelFileUtil.uploadLocal("file.platform",file.getInputStream(), name)){
@@ -180,7 +181,7 @@ public class MediaResController {
 	    				json = getResponse(500,errorList,"文件内容不符合格式要求");
 	    				return json;
 	   			 }else{
-	   				 flag = mediaResService.addPMPFile(filePath);
+	   				 //flag = mediaResService.addPMPFile(filePath);
 	   			 }
         	}
         	

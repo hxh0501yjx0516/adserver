@@ -208,16 +208,16 @@ public class MediaFileValidateImpl implements MediaFileValidate{
 			//验证百度渠道
 			int w =1;
 			while(w<3){
-				if(datas.get(w) != null){
+				if(datas.get(String.valueOf(w)) != null){
 					String str = "";
 					if(w==1){
 						str = "百度渠道中";
 					}else{
 						str = "平台渠道中";
 					}
-					for (int j = 0; j < datas.get(w).size(); j++) {
+					for (int j = 0; j < datas.get(String.valueOf(w)).size(); j++) {
 						//验证是否存在设备ID
-						String[] channelStr = datas.get(w).get(j);
+						String[] channelStr = datas.get(String.valueOf(w)).get(j);
 						if(channelStr[0] == ""){
 							errorList.add(str+",第"+(j+1)+"行,未获取到APPSID");
 						}
@@ -244,24 +244,24 @@ public class MediaFileValidateImpl implements MediaFileValidate{
 				w++;
 			}
 			//验证售卖单元城市及场景信息
-			int c = 2;
-			while(c<4){
-				if(datas.get(c) != null){
+			int c = 3;
+			while(c<5){
+				if(datas.get(String.valueOf(c)) != null){
 					String info = "";
-					if(c==1){
+					if(c==3){
 						info = "单元城市";
 					}else{
 						info = "单元场景";
 					}
-					for (int k = 0; k < datas.get(c).size();k++) {
-						String[] pmpcity = datas.get(c).get(k);
+					for (int k = 0; k < datas.get(String.valueOf(c)).size();k++) {
+						String[] pmpcity = datas.get(String.valueOf(c)).get(k);
 						if(pmpcity[0]==""){
 							errorList.add(info+",第"+(k+1)+"行,未获到信息");
 						}
 						if(pmpcity[1]==""){
 							errorList.add(info+",第"+(k+1)+"行,未获取到信息");
 						}else{
-							if(c == 2){
+							if(c == 3){
 								if(!pmpcity[1].equals("")){
 									if(!validateCity(citys,pmpcity[1])){
 										errorList.add(info+",第"+(k+1)+"行,未填写正确城市");
@@ -387,7 +387,7 @@ public class MediaFileValidateImpl implements MediaFileValidate{
 	//验证城市信息
 	public boolean validateCity(List<Map<String,Object>> city,String cityName){
 		for(Map<String,Object> map:city){
-			if(map.get("name").equals(cityName)){
+			if(map.get("name").toString().indexOf(cityName) != -1){
 				return true;
 			}
 		}

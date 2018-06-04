@@ -235,14 +235,26 @@ public class POIUtil {
         }  
         return cellValue;  
     }
+    public static String getExtensionName(String filename) {   
+        if ((filename != null) && (filename.length() > 0)) {   
+            int dot = filename.lastIndexOf('.');   
+            if ((dot >-1) && (dot < (filename.length() - 1))) {   
+                return filename.substring(dot);   
+            }   
+        }   
+        return filename;   
+    } 
+    
+    
     public static void main(String[] args) throws IOException {
-    	List<String[]> list = POIUtil.readExcel("D:\\平台模板-PMP资源备案.xlsx", 4);
+    	/*List<String[]> list = POIUtil.readExcel("D:\\平台模板-PMP资源备案.xlsx", 4);
     	for (int i = 0; i < list.size() ; i++) {
 			String [] str = list.get(i);
 			for (int j = 0; j < str.length; j++) {
 				System.out.println(str[j]);
 			}
-		}
+		}*/
+    	System.out.println(POIUtil.getExtensionName("D:\\平台模板-PMP资源备案.xlsx"));
     
     
     }
