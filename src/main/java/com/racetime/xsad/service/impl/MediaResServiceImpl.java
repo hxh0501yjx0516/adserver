@@ -135,6 +135,12 @@ public class MediaResServiceImpl implements MediaResService{
 			    	}
 			    	num++;
 		    	}
+		    	//获取售卖单元城市信息
+		    	List<Map<String,Object>> pmp_city =  getPmpResourceCity(result.get("3"));
+		    	//获取售卖单元场景信息
+		    	List<Map<String,Object>> pmp_senece = getPmpResourceSecene(result.get("4"));
+		    	mediaResDao.insertPmpResourceCity(pmp_city);
+		    	mediaResDao.insertPmpResourceSecene(pmp_senece);
 		    	return true;
 		    }
 		} catch (Exception e) {
@@ -257,10 +263,10 @@ public class MediaResServiceImpl implements MediaResService{
 	
 	public List<PmpDevice> getPmpDevice(List<String[]> list)throws Exception{
 		List<PmpDevice> pmpDevices = new ArrayList<>();
-			//获取城市编码
+			/*//获取城市编码
 			List<Map<String,Object>> cityc_code = mediaResDao.getCityInfo();
 			//获取场景编码
-			List<Map<String,Object>> ad_scene = mediaResDao.getScene();
+			List<Map<String,Object>> ad_scene = mediaResDao.getScene();*/
 			PmpDevice pmpDevice = null;
 			for (int i = 0; i < list.size(); i++) {
 				String[] str = list.get(i);
@@ -269,31 +275,31 @@ public class MediaResServiceImpl implements MediaResService{
 				pmpDevice.setSsp_adslot_id(str[2]);
 				pmpDevice.setId(str[3]);
 				pmpDevice.setName(str[4]);
-				for (Map<String,Object> map:cityc_code) {
+				/*for (Map<String,Object> map:cityc_code) {
 					if(map.get("name").equals(str[6])){
 						pmpDevice.setCity_code(map.get("code").toString());
 					}
-				}
-				pmpDevice.setPoi(str[7]);
-				pmpDevice.setAddress(str[8]);
-				for(Map<String,Object> scene:ad_scene){
+				}*/
+				pmpDevice.setPoi(str[5]);
+				pmpDevice.setAddress(str[6]);
+				/*for(Map<String,Object> scene:ad_scene){
 					if(scene.get("name").equals(str[10])){
 						pmpDevice.setScene_id(scene.get("id").toString());
 					}
-				}
-				pmpDevice.setDevice_num(str[11]);
+				}*/
+				pmpDevice.setDevice_num(str[7]);
 				//获取开始投放日期和截止日期中所有日期
 				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");  
-				Date dBegin = sdf.parse(str[12].substring(0,4)+"-"+str[12].substring(4,6)+"-"+str[12].substring(6,8));  
-				Date dEnd = sdf.parse(str[13].substring(0,4)+"-"+str[13].substring(4,6)+"-"+str[13].substring(6,8));  
+				Date dBegin = sdf.parse(str[8].substring(0,4)+"-"+str[8].substring(4,6)+"-"+str[8].substring(6,8));  
+				Date dEnd = sdf.parse(str[9].substring(0,4)+"-"+str[9].substring(4,6)+"-"+str[9].substring(6,8));  
 				List<Date> date = DateUtil.findDates(dBegin,dEnd);
 				pmpDevice.setTimes(date);
-				pmpDevice.setStock(str[14]);
-				pmpDevice.setPv(str[15]);
-				pmpDevice.setUv(str[16]);
+				pmpDevice.setStock(str[10]);
+				pmpDevice.setPv(str[11]);
+				pmpDevice.setUv(str[12]);
 				//pmpDevice.setCpm(Double.parseDouble(str[17]));
-				pmpDevice.setCpm(Double.parseDouble(str[17]));
-				pmpDevice.setPrice(Double.parseDouble(str[18]));
+				pmpDevice.setCpm(Double.parseDouble(str[13]));
+				pmpDevice.setPrice(Double.parseDouble(str[14]));
 				pmpDevices.add(pmpDevice);
 			}
 		return pmpDevices;
@@ -357,6 +363,54 @@ public class MediaResServiceImpl implements MediaResService{
 		}
 		return material;
 	}
+	//pmp组装售卖单元和城市
+	
+	@SuppressWarnings("unused")
+	private List<Map<String,Object>> getPmpResourceCity(List<String[]> list){
+		//获取城市编码
+		List<Map<String,Object>> cityc_code = mediaResDao.getCityInfo();
+		List<Map<String,Object>> pmp_resource_city = new ArrayList<>();
+		Map<String,Object> result = null;
+		for (int i = 0; i < list.size(); i++) {
+			String[] str = list.get(i);
+			result = new HashMap<>();
+			result.put("pmp_resource_id", str[0]);
+			for (Map<String,Object> map:cityc_code) {
+				if(map.get("name").toString().indexOf(str[1]) != -1){
+					result.put("city_code", map.get("code"));
+				}
+			}
+			pmp_resource_city.add(result);
+		}
+		return pmp_resource_city;
+	}
+	
+	//读取sheet获取是
+	@SuppressWarnings("unused")
+	private List<Map<String,Object>> getPmpResourceSecene(List<String[]> list){
+		//获取场景编码
+		List<Map<String,Object>> ad_scene = mediaResDao.getScene();
+		List<Map<String,Object>> pmp_resource_scene = new ArrayList<>();
+		Map<String,Object> result = null;
+		for (int i = 0; i < list.size(); i++) {
+			String[] str = list.get(i);
+			result = new HashMap<>();
+			result.put("pmp_resource_id", str[0]);
+			for (Map<String,Object> map:ad_scene) {
+				if(map.get("name").equals(str[1])){
+					result.put("scene_id",map.get("id"));
+				}
+			}
+			pmp_resource_scene.add(result);
+		}
+		return pmp_resource_scene;
+		
+	}
+	
+	
+	
+	
+	
 	public static void main(String[] args) throws ParseException {
 		  String string = "20161024";
 		  String year = string.substring(0,4);

@@ -10,7 +10,7 @@
  
   <!--获取城市编码  -->
   <select id="getCityInfo" resultType="Map">
-  	 select  code,name from ad_city where level = '2'
+  	 select  code,name from ad_city where level != '1'
   </select>
   <!--获取场景  -->	
   <select id="getScene"  resultType="Map" >
@@ -197,11 +197,11 @@
     	select count(*) as count from pmp_resource where id = #{id}
  	 </selectKey>
  	 <if test="count==0">
- 	 	insert into pmp_resource (id,city_code,scene_id,device_num,name,pv,uv,ssp_adslot_id,cpm,sell_num,poi,address,createtime,price)
-  	 	values(#{id},#{city_code},#{scene_id},#{device_num},#{name},#{pv},#{uv},#{ssp_adslot_id},#{cpm},#{poi},#{address},now(),#{price}) 
+ 	 	insert into pmp_resource (id,device_num,name,pv,uv,ssp_adslot_id,cpm,poi,address,createtime,price)
+  	 	values(#{id},#{device_num},#{name},#{pv},#{uv},#{ssp_adslot_id},#{cpm},#{poi},#{address},now(),#{price}) 
  	 </if>
   	 <if test="count==1">
-  	 	update pmp_resource set city_code = #{city_code},scene_id = #{scene_id},device_num= #{device_num},name=#{name},pv=#{pv},
+  	 	update pmp_resource set device_num= #{device_num},name=#{name},pv=#{pv},
   	 		uv=#{uv},ssp_adslot_id=#{ssp_adslot_id},cpm=#{cpm},poi=#{poi},address=#{address},updatetime=now(),price=#{price}
   	 		where id = #{id}
   	 </if>
@@ -260,10 +260,52 @@
 				pmp_resource_id = #{pmp_resource_id} and adx_adslot_id = #{adx_adslot_id}
 			</if>
   	 </insert>
-	 <!--根据APPID  -->
-	 
-	 
-	 
+	 <!--批量插入pmp 售卖单元与城市关联表  -->
+	  <insert id="insertPmpResourceCity">
+  		 INSERT INTO pmp_resource_city (pmp_resource_id,city_code)
+    	 VALUES
+    	<foreach collection ="list" item="item" separator =",">
+         (#{item.pmp_resource_id},#{item.city_code})
+    	</foreach>
+         <!-- ON DUPLICATE KEY UPDATE
+         pmp_resource_id = case city_code
+     	 <foreach collection="list" item="item" index="index">
+			WHEN #{item.city_code} THEN #{item.pmp_resource_id}
+		</foreach>
+   		 END,
+     	city_code = case city_code
+     	<foreach collection="list" item="item" index="index">
+			WHEN #{item.city_code} THEN #{item.city_code}
+		</foreach>
+   		 END -->
+   		  ON DUPLICATE KEY UPDATE   
+         pmp_resource_id = VALUES(pmp_resource_id),  
+         city_code = VALUES(city_code)  
+   		 
+   		 
+      </insert>
+	 <!--批量插入Pmp  售卖单元与场景关联表-->
+     <insert id="insertPmpResourceSecene">
+         INSERT INTO pmp_resource_scene (pmp_resource_id,scene_id)
+    	 VALUES
+    	<foreach collection ="list" item="item" separator =",">
+         (#{item.pmp_resource_id},#{item.scene_id})
+    	</foreach>
+    	 <!-- ON DUPLICATE KEY UPDATE
+    	 pmp_resource_id = case scene_id
+     	 <foreach collection="list" item="item" index="index">
+			WHEN #{item.scene_id} THEN #{item.pmp_resource_id}
+		</foreach>
+   		 END,
+     	 scene_id = case scene_id
+     	<foreach collection="list" item="item" index="index">
+			WHEN #{item.scene_id} THEN #{item.scene_id}
+		</foreach>
+   		 END -->
+   		  ON DUPLICATE KEY UPDATE   
+         pmp_resource_id = VALUES(pmp_resource_id),  
+         scene_id = VALUES(scene_id)
+     </insert>
 	  
   <!-- ===========================================物料============================================  -->
   <insert id="insertMaterial">

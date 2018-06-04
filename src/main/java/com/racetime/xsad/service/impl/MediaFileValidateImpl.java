@@ -157,6 +157,8 @@ public class MediaFileValidateImpl implements MediaFileValidate{
 	@Override
 	public List<String> MediaPMPValidate(String filePath) {
 		List<String> errorList = new ArrayList<>();
+		List<Map<String,Object>> scenes =  mediaResDao.getScene();
+		List<Map<String,Object>> citys = mediaResDao.getCityInfo();
 		try {
 			Map<String,List<String[]>> datas = new HashMap<>();
 			datas = POIUtil.readExcel(filePath);
@@ -174,25 +176,26 @@ public class MediaFileValidateImpl implements MediaFileValidate{
 					errorList.add("媒体库存排期,第"+(i+1)+"行,未获取到售卖单元编号");
 				}if(str[4]==""){
 					errorList.add("媒体库存排期,第"+(i+1)+"行,未获取到售卖单元");
-				}if(str[6]==""){
+				}/*if(str[6]==""){
 					errorList.add("媒体库存排期,第"+(i+1)+"行,未获取到城市");
 				}if(str[10]==""){
 					errorList.add("媒体库存排期,第"+(i+1)+"行,未获取到场景信息");
-				}if(str[11]==""){
+				}*/
+				if(str[7]==""){
 					errorList.add("媒体库存排期,第"+(i+1)+"行,未获取到设备数");
-				}if(str[12]==""){
+				}if(str[8]==""){
 					errorList.add("媒体库存排期,第"+(i+1)+"行,未获取到开始售卖时间");
-				}if(str[13]==""){
+				}if(str[9]==""){
 					errorList.add("媒体库存排期,第"+(i+1)+"行,未获取到结束售卖时间");
-				}if(str[14]==""){
+				}if(str[10]==""){
 					errorList.add("媒体库存排期,第"+(i+1)+"行,未获取到库存份数");
-				}if(str[15]==""){
+				}if(str[11]==""){
 					errorList.add("媒体库存排期,第"+(i+1)+"行,未获取到展现量");
-				}if(str[16]==""){
+				}if(str[12]==""){
 					errorList.add("媒体库存排期,第"+(i+1)+"行,未获取到处达人群");
-				}if(str[17]==""){
+				}if(str[13]==""){
 					errorList.add("媒体库存排期,第"+(i+1)+"行,未获取到CPM");
-				}if(str[18] == ""){
+				}if(str[14] == ""){
 					errorList.add("媒体库存排期,第"+(i+1)+"行,未获取到媒体单价");
 				}if(str[3] != ""){
 					String regEx1 = "^[a-zA-Z0-9_-]{5,}";
@@ -205,39 +208,78 @@ public class MediaFileValidateImpl implements MediaFileValidate{
 			//验证百度渠道
 			int w =1;
 			while(w<3){
-				String str = "";
-				if(w==1){
-					str = "百度渠道中";
-				}else{
-					str = "平台渠道中";
-				}
-				for (int j = 0; j < datas.get("1").size(); j++) {
-					//验证是否存在设备ID
-					String[] channelStr = datas.get("1").get(j);
-					if(channelStr[0] == ""){
-						errorList.add(str+",第"+(j+1)+"行,未获取到APPSID");
+				if(datas.get(w) != null){
+					String str = "";
+					if(w==1){
+						str = "百度渠道中";
+					}else{
+						str = "平台渠道中";
 					}
-					if(channelStr[1] == ""){
-						errorList.add(str+",第"+(j+1)+"行,未获取到系统广告位ID");
-					}
-					if(channelStr[2] == ""){
-						errorList.add(str+",第"+(j+1)+"行,未获取到"+str+"广告位ID");
-					}
-					if(channelStr[3]== ""){
-						errorList.add(str+",第"+(j+1)+"行,未获取到"+str+"广告位名称");
-					}
-					if(channelStr[4] == ""){
-						errorList.add(str+",第"+(j+1)+"行,未获取到CPM");
-					}
-					if(channelStr[5] == ""){
-						errorList.add(str+",第"+(j+1)+"行,未获取到渠道媒体单价/份/天");
-					}
-					if(channelStr[6] == ""){
-						errorList.add(str+",第"+(j+1)+"行,未获取售卖单元编号");
+					for (int j = 0; j < datas.get(w).size(); j++) {
+						//验证是否存在设备ID
+						String[] channelStr = datas.get(w).get(j);
+						if(channelStr[0] == ""){
+							errorList.add(str+",第"+(j+1)+"行,未获取到APPSID");
+						}
+						if(channelStr[1] == ""){
+							errorList.add(str+",第"+(j+1)+"行,未获取到系统广告位ID");
+						}
+						if(channelStr[2] == ""){
+							errorList.add(str+",第"+(j+1)+"行,未获取到"+str+"广告位ID");
+						}
+						if(channelStr[3]== ""){
+							errorList.add(str+",第"+(j+1)+"行,未获取到"+str+"广告位名称");
+						}
+						if(channelStr[4] == ""){
+							errorList.add(str+",第"+(j+1)+"行,未获取到CPM");
+						}
+						if(channelStr[5] == ""){
+							errorList.add(str+",第"+(j+1)+"行,未获取到渠道媒体单价/份/天");
+						}
+						if(channelStr[6] == ""){
+							errorList.add(str+",第"+(j+1)+"行,未获取售卖单元编号");
+						}
 					}
 				}
 				w++;
 			}
+			//验证售卖单元城市及场景信息
+			int c = 2;
+			while(c<4){
+				if(datas.get(c) != null){
+					String info = "";
+					if(c==1){
+						info = "单元城市";
+					}else{
+						info = "单元场景";
+					}
+					for (int k = 0; k < datas.get(c).size();k++) {
+						String[] pmpcity = datas.get(c).get(k);
+						if(pmpcity[0]==""){
+							errorList.add(info+",第"+(k+1)+"行,未获到信息");
+						}
+						if(pmpcity[1]==""){
+							errorList.add(info+",第"+(k+1)+"行,未获取到信息");
+						}else{
+							if(c == 2){
+								if(!pmpcity[1].equals("")){
+									if(!validateCity(citys,pmpcity[1])){
+										errorList.add(info+",第"+(k+1)+"行,未填写正确城市");
+									}
+								}
+							}else{
+								if(!pmpcity[1].equals("")){
+									if(!validateScene(scenes,pmpcity[1])){
+										errorList.add(info+",第"+(k+1)+"行,未填写正确场景");
+									}
+								}
+							}
+						}
+					}
+				}
+				c++;
+			}
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 			errorList.add("文件解析错误");
@@ -333,7 +375,7 @@ public class MediaFileValidateImpl implements MediaFileValidate{
 		return errorList;
 		
 	}
-	
+	//验证场景信息
 	public boolean validateScene(List<Map<String,Object>> scene,String sceneName){
 		for(Map<String,Object> map:scene){
 			if(map.get("name").equals(sceneName)){
@@ -341,9 +383,15 @@ public class MediaFileValidateImpl implements MediaFileValidate{
 			}
 		}
 		return false;
-		
-		
-		
+	}
+	//验证城市信息
+	public boolean validateCity(List<Map<String,Object>> city,String cityName){
+		for(Map<String,Object> map:city){
+			if(map.get("name").equals(cityName)){
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	

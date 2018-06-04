@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -158,7 +160,13 @@ public class MediaResController {
 			json = getResponse(400,"","文件上传格式不匹配.");
 			return json;
 		}
-		String name=file.getOriginalFilename();
+		//创建文件名称
+		Calendar cal = Calendar.getInstance();
+		Integer year = cal.get(cal.YEAR);
+		Integer moth = cal.get(cal.MONTH)+1;
+		Integer day = cal.get(cal.DAY_OF_MONTH);
+		String name= year+""+moth+""+day;
+		//String name=file.getOriginalFilename();
         try{
         	if(ExcelFileUtil.uploadLocal("file.platform",file.getInputStream(), name)){
         		String filePath = PropertiesUtil.getValue("file.platform", FileUploadConstant.FILEPATHPROPERTIES)+File.separator+name;

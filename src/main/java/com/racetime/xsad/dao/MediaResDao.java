@@ -58,6 +58,11 @@ public interface MediaResDao {
 	
 	public int insertPmpAdxAdslotRelation(PmpAdslotRelation pmpAdslotRelation);
 	
+	public int insertPmpResourceCity(List<Map<String,Object>> map);
+	
+	public int insertPmpResourceSecene(List<Map<String,Object>> map);
+	
+	
 	//================================material===============================
 	
 	public int insertMaterial(List<Material> list);

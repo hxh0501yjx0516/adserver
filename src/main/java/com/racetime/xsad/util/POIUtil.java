@@ -13,7 +13,8 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;  
 import org.apache.poi.ss.usermodel.Row;  
 import org.apache.poi.ss.usermodel.Sheet;  
-import org.apache.poi.ss.usermodel.Workbook;  
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +72,13 @@ public class POIUtil {
                     //循环当前行  
                     for(int cellNum = firstCellNum; cellNum < lastCellNum;cellNum++){  
                         Cell cell = row.getCell(cellNum);  
-                        cells[cellNum] = getCellValue(cell);  
+                        //cells[cellNum] = getCellValue(cell);  
+                        //判断是否是合并单元格
+	                     if(isMergedRegion(sheet,rowNum,cellNum)){
+	                    	 cells[cellNum] = getMergedRegionValue(sheet,rowNum,cellNum);
+	                     }else{
+	                    	 cells[cellNum] = getCellValue(cell);
+	                     }
                     }  
                     list.add(cells);  
                 }
@@ -120,8 +127,14 @@ public class POIUtil {
 	                 String[] cells = new String[row.getLastCellNum()]; 
 	                 //循环当前行  
 	                 for(int cellNum = firstCellNum; cellNum < lastCellNum;cellNum++){  
-	                     Cell cell = row.getCell(cellNum);  
-	                     cells[cellNum] = getCellValue(cell);  
+	                     Cell cell = row.getCell(cellNum); 
+	                     //判断是否是合并单元格
+	                     if(isMergedRegion(sheet,rowNum,cellNum)){
+	                    	 cells[cellNum] = getMergedRegionValue(sheet,rowNum,cellNum);
+	                     }else{
+	                    	 cells[cellNum] = getCellValue(cell);
+	                     }
+	                       
 	                 }  
 	                 list.add(cells);  
 	             }
@@ -133,10 +146,60 @@ public class POIUtil {
 	        return result;  
 	    }
 	 
-	 
-	 
-	 
-	 
+	 /** 
+	     * 判断指定的单元格是否是合并单元格 
+	     *  
+	     * @param sheet 
+	     *            工作表 
+	     * @param row 
+	     *            行下标 
+	     * @param column 
+	     *            列下标 
+	     * @return 
+	     */  
+	    private static boolean isMergedRegion(Sheet sheet, int row, int column) {  
+	        int sheetMergeCount = sheet.getNumMergedRegions();  
+	        for (int i = 0; i < sheetMergeCount; i++) {  
+	            CellRangeAddress range = sheet.getMergedRegion(i);  
+	            int firstColumn = range.getFirstColumn();  
+	            int lastColumn = range.getLastColumn();  
+	            int firstRow = range.getFirstRow();  
+	            int lastRow = range.getLastRow();  
+	            if (row >= firstRow && row <= lastRow) {  
+	                if (column >= firstColumn && column <= lastColumn) {  
+	                    return true;  
+	                }  
+	            }  
+	        }  
+	        return false;  
+	    }
+	    
+	    /**
+	     * 返回合并单元格得值
+	     * @param sheet
+	     * @param row
+	     * @param column
+	     * @return
+	     */
+	    private static String getMergedRegionValue(Sheet sheet, int row, int column) {  
+	        int sheetMergeCount = sheet.getNumMergedRegions();  
+	        for (int i = 0; i < sheetMergeCount; i++){  
+	            CellRangeAddress ca = sheet.getMergedRegion(i);  
+	            int firstColumn = ca.getFirstColumn();  
+	            int lastColumn = ca.getLastColumn();  
+	            int firstRow = ca.getFirstRow();  
+	            int lastRow = ca.getLastRow();  
+	            if (row >= firstRow && row <= lastRow) {  
+	  
+	                if (column >= firstColumn && column <= lastColumn) {  
+	                    Row fRow = sheet.getRow(firstRow);  
+	                    Cell fCell = fRow.getCell(firstColumn);  
+	                    return getCellValue(fCell);  
+	                }  
+	            }  
+	        }  
+	        return "";  
+	    }  
     public static String getCellValue(Cell cell){  
         String cellValue = "";  
         if(cell == null){  
@@ -172,5 +235,15 @@ public class POIUtil {
         }  
         return cellValue;  
     }
-
+    public static void main(String[] args) throws IOException {
+    	List<String[]> list = POIUtil.readExcel("D:\\平台模板-PMP资源备案.xlsx", 4);
+    	for (int i = 0; i < list.size() ; i++) {
+			String [] str = list.get(i);
+			for (int j = 0; j < str.length; j++) {
+				System.out.println(str[j]);
+			}
+		}
+    
+    
+    }
 }
