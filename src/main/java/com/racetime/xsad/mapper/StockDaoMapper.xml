@@ -14,16 +14,16 @@
    
  <!--根据上游提供库存信息  -->
   <select id="getPmpResource" parameterType="Map" resultType="Map">
-		SELECT t.id,t.name,t.ssp_adslot_id,t4.city_code,t5.scene_id,t2.ssp_app_id,t.pv,t.uv,t.device_num,t10.sailed_cpm as price,t10.cpm,t7.adx_adslot_id from pmp_resource t,
-		ssp_devicegroup t2, ssp_adslot t3,pmp_resource_city t4, pmp_resource_scene t5,ssp_app t6,adslot_relation t7,adx_app_devicegroup t8,adx_app t9,pmp_adxadslot_relation t10
+		SELECT t.id,t.name,t.ssp_adslot_id,t4.city_code,t5.scene_id,t2.ssp_app_id,t.pv,t.uv,t.device_num,t10.sailed_cpm as price,t10.cpm,t8.adx_adslot_id from pmp_resource t,
+		ssp_devicegroup t2, ssp_adslot t3,pmp_resource_city t4, pmp_resource_scene t5,ssp_app t6,adx_app_devicegroup t8,adx_app t9,pmp_adxadslot_relation t10
 		where t.ssp_adslot_id = t3.id
 		and t2.id = t3.ssp_devicegroup_id
 		and t3.id = t.ssp_adslot_id
 		and t2.ssp_app_id = t6.id
 		and t4.pmp_resource_id = t.id
 		and t5.pmp_resource_id = t.id
-		and t7.ssp_adslot_id = t.ssp_adslot_id
-		and t7.adx_adslot_id = t8.adx_adslot_id
+	<!-- 	and t7.ssp_adslot_id = t.ssp_adslot_id
+		and t7.adx_adslot_id = t8.adx_adslot_id -->
 		and t8.adx_app_id = t9.id
 		and t.id = t10.pmp_resource_id
 		and t10.adx_adslot_id = t8.adx_adslot_id
@@ -120,71 +120,38 @@
    	 
    </select>
    <!--获取app下所有投放库存量  -->
-   <select id="getOderAppStock" parameterType="String" resultType="Map">
-	 		<!--  SELECT
-		(
-			SELECT
-				sum(num)
+   <select id="getOderAppStock" parameterType="Map" resultType="String">
+	 		SELECT
+			sum(t2.num) as num
 			FROM
-				pmp_orders t1,pmp_order_detail t4
-			WHERE
-				t1.order_type = '1'
-			AND t1.orderid = t4.order_id
-    	and t1.ad_app_id = #{ad_app_id}
-
-		)  AS ydnum,
-		(
-			SELECT
-				sum(num)
-			FROM
-				pmp_orders t2 ,pmp_order_detail t5
-			WHERE
-				t2.order_type = '2'
-      		AND t2.orderid = t5.order_id
-			  and t2.ad_app_id = #{ad_app_id}
-			 ) AS sdnum
-	FROM
-		pmp_orders t
-		
-	  WHERE t.ad_app_id = #{ad_app_id}
-	  GROUP BY t.ad_app_id -->
-		 SELECT
-		(
-			SELECT
-				sum(num)
-			FROM
-				pmp_orders t1,pmp_order_detail t4
-			WHERE
-				t1.order_type = '1'
-			AND t1.orderid = t4.order_id
-    		and t1.ad_app_id = #{ad_app_id}
-    		and t4.put_time &gt;= #{sdate}
-      		and t4.put_time &lt;= #{edate}
-
-		)  AS ydnum,
-		(
-			SELECT
-				sum(num)
-			FROM
-				pmp_orders t2 ,pmp_order_detail t5
-			WHERE
-				t2.order_type = '2'
-      		AND t2.orderid = t5.order_id
-			  and t2.ad_app_id = #{ad_app_id}
-       		  and t5.put_time &gt;= #{sdate}
-			  and t5.put_time &lt;= #{edate}
-			 ) AS sdnum
-	FROM
-		pmp_orders t
-	  WHERE t.ad_app_id = #{ad_app_id}
-    GROUP BY t.ad_app_id	 
-   
+			pmp_orders t1,pmp_order_detail t2
+			WHERE   1=1
+	 		<!--预定数量  -->
+			<if test="type == 1">
+			 and t1.order_type = '1'
+			</if>	
+	 		<!--锁定数量  -->
+			<if test=" type == 2">
+		 	 and t1.order_type = '2'
+	 		</if>
+			AND t1.orderid = t2.order_id
+			and t2.adslot_id in (
+				select t.ssp_app_id from ssp_devicegroup t
+				where t.ssp_app_id = #{ad_app_id}
+			)
+			and t2.put_time &gt;= #{sdate}
+      		and t2.put_time &lt;= #{edate}
+			GROUP BY t2.adslot_id
    </select>
    <!--获取app下所有库存量  -->
-   <select id="getAllAppStock"  resultType="Map">
- 	select t1.ssp_app_id as app_id ,sum(t3.stock) total from pmp_resource t,ssp_devicegroup t1, ssp_adslot t2,pmp_resource_stock t3
+   <select id="getAllAppStock"  resultType="Map" parameterType="Map">
+ 	select t1.ssp_app_id as app_id ,sum(t3.stock) total from pmp_resource t,ssp_devicegroup t1, ssp_adslot t2,pmp_resource_stock t3,ssp_app t4
 	where t.ssp_adslot_id = t2.id and t2.ssp_devicegroup_id = t1.id
 	and t.id = t3.pmp_resource_id
+	and t1.ssp_app_id = t4.id
+	 <if test="media_id != null and media_id != ''">  
+       		and t4.media_id = #{media_id}
+     </if>
 	GROUP BY t1.ssp_app_id 
    </select>
    

@@ -72,7 +72,7 @@ public class StockController {
 	 */
 	@ResponseBody
 	@RequestMapping("/getAppStock")
-	public String getAppStock(String sdate,String edate){
+	public String getAppStock(String sdate,String edate,String media_id){
 		//stockService.getAppStockInfo();
 		if(sdate == null || edate == null){
 			return "0";
@@ -80,6 +80,7 @@ public class StockController {
 		Map<String,Object> param = new HashMap<>();
 		param.put("sdate", sdate);
 		param.put("edate", edate);
+		param.put("media_id", media_id);
 		return stockService.getAppStockInfo(param);
 	}
 	
