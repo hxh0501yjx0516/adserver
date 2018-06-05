@@ -136,11 +136,16 @@
 	 		</if>
 			AND t1.orderid = t2.order_id
 			and t2.adslot_id in (
-				select t.ssp_app_id from ssp_devicegroup t
-				where t.ssp_app_id = #{ad_app_id}
+				select t1.id from ssp_devicegroup t,ssp_adslot t1
+				where t.ssp_app_id = #{ad_app_id} and t.id = t1.ssp_devicegroup_id
 			)
-			and t2.put_time &gt;= #{sdate}
+			<if test=" sdate != null and sdate != ''">
+  			   and t2.put_time &gt;= #{sdate} 
+  	 	   </if>
+	  	  <if test=" edate != null and edate != ''">
       		and t2.put_time &lt;= #{edate}
+	      </if>		
+			
 			GROUP BY t2.adslot_id
    </select>
    <!--获取app下所有库存量  -->
