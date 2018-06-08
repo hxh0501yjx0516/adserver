@@ -189,7 +189,7 @@ public class MediaResController {
         }catch(Exception e){
         	e.printStackTrace();
         	log.error("PMP导入出错", e);
-        	return getResponse(500,"","上传失败");
+        	return getResponse(500,"","未知异常，请联系客服人员");
         }
         return json;
         
@@ -197,10 +197,15 @@ public class MediaResController {
 	
 	//组装返回错误信息
 	public ResponseJson getResponse(int code,Object data,String msg){
+		String str [] = {msg};
 		ResponseJson json = new ResponseJson();
 		json.setCode(code);
-		json.setData(data);
-		json.setMsg(msg);
+		if(msg.equals("文件内容不符合格式要求")){
+			json.setData(data);
+		}else{
+			json.setData(str);
+		}
+		//json.setMsg(msg);
 		return json;
 	}
 	
