@@ -51,7 +51,6 @@ public class MediaResController {
 	private MediaFileValidate mediaFileValidate;
 
 	//上传物料信息zip
-	@SuppressWarnings("finally")
 	@ResponseBody
 	@RequestMapping(value="/material", method = RequestMethod.POST)
 	public ResponseJson uploadMediaMaterialRes(@RequestParam(value="file") MultipartFile file,
@@ -94,20 +93,19 @@ public class MediaResController {
 	            	}
 	        	}
 	        }
-		}catch(Exception e){
-			log.error("物料提交出现错误", e);
-		}finally{
 			if(flag){
 				json = getResponse(200,"","文件上传成功.");
 	        }else{
 	        	json = getResponse(500,"","上传失败.");
 	        }
-	        return json;
+		}catch(Exception e){
+			log.error("物料提交出现错误", e);
+			return getResponse(500,"","上传失败.");
 		}
+		return json;
 	
 	}
 	
-	@SuppressWarnings("finally")
 	@ResponseBody
 	@RequestMapping(value="/rtb", method = RequestMethod.POST)
 	public ResponseJson addRTBMediaRes(@RequestParam(value="file") MultipartFile file,
@@ -135,21 +133,19 @@ public class MediaResController {
     				flag = mediaResService.addRTBFile(filePath);
     			}
         	}
-        }catch(Exception e){
-        	e.printStackTrace();
-        	log.error("上传RTB资源报错", e);
-        	
-        }finally {
         	if(flag == true){
     			json = getResponse(200,"","scucess");
         	}else{
         		json = getResponse(500,"","上传失败");
         	}
-    		return json;
-		}
-        
+        }catch(Exception e){
+        	e.printStackTrace();
+        	log.error("上传RTB资源报错", e);
+        	return getResponse(500,"","上传失败");
+        	
+        }
+        return json;
 	}
-	@SuppressWarnings("finally")
 	@ResponseBody
 	@RequestMapping(value="/pmp", method = RequestMethod.POST)
 	public ResponseJson addPMPMediaRes(@RequestParam(value="file") MultipartFile file,
@@ -181,21 +177,21 @@ public class MediaResController {
 	    				json = getResponse(500,errorList,"文件内容不符合格式要求");
 	    				return json;
 	   			 }else{
-	   				 //flag = mediaResService.addPMPFile(filePath);
+	   				   flag = mediaResService.addPMPFile(filePath);
 	   			 }
         	}
-        	
-        }catch(Exception e){
-        	e.printStackTrace();
-        	log.error("PMP导入出错", e);
-        }finally {
         	if(flag == true){
     			json = getResponse(200,"","scucess");
         	}else{
         		json = getResponse(500,"","上传失败");
         	}
-    		return json;
-		}
+        	
+        }catch(Exception e){
+        	e.printStackTrace();
+        	log.error("PMP导入出错", e);
+        	return getResponse(500,"","上传失败");
+        }
+        return json;
         
 	}
 	
