@@ -44,7 +44,7 @@ public class FileOper {
 	 public static void unZipFiles(File zipFile, String descDir) throws IOException {  
 		 	ZipFile zip = new ZipFile(zipFile,Charset.forName("GBK"));//解决中文文件夹乱码  
 	        String name = zip.getName().substring(zip.getName().lastIndexOf('\\')+1, zip.getName().lastIndexOf('.'));  
-	        File pathFile = new File(descDir+name);  
+	        File pathFile = new File(descDir);  
 	        if (!pathFile.exists()) {  
 	            pathFile.mkdirs();  
 	        }  
@@ -52,8 +52,8 @@ public class FileOper {
 	            ZipEntry entry = (ZipEntry) entries.nextElement();  
 	            String zipEntryName = entry.getName();  
 	            InputStream in = zip.getInputStream(entry);  
-	            String outPath = (descDir + name +"/"+ zipEntryName).replaceAll("\\*", "/");  
-	              
+	            //String outPath = (descDir + name +"/"+ zipEntryName).replaceAll("\\*", "/");  
+	            String outPath = (descDir + zipEntryName).replaceAll("\\*", "/");
 	            // 判断路径是否存在,不存在则创建文件路径  
 	            File file = new File(outPath.substring(0, outPath.lastIndexOf('/')));  
 	            if (!file.exists()) {  
@@ -81,11 +81,15 @@ public class FileOper {
 	    }  
 	    //测试  
 	    public static void main(String[] args) {  
-	        try {  
-	            unZipFiles(new File("E:/Study/Java.zip"), "E:/Study/abc/");  
+	        /*try {  
+	            unZipFiles(new File("D:/"), "E:/Study/abc/");  
 	        } catch (IOException e) {  
 	            e.printStackTrace();  
-	        }  
+	        }  */
+	    	System.out.println(getFileName("D:/temp/","6B406381B4B58F25BFDAA130BA09D7D2"));
+	    	
+	    	
+	        
 	    } 
 	
 	
@@ -123,13 +127,29 @@ public class FileOper {
 	    	if (fileDir.isDirectory()) {
 	    		String[] children = fileDir.list();
 	    		for (int i = 0; i < children.length; i++) {
-					if(children[i].equals(fileName)){
+					if(children[i].contains(fileName)){
 						return true;
 					}
 				}
 	    	}
 		   return false;
 	   }
+	   //根据文件名称返回文件拓展名
+	   public static String getFileName(String filePath,String fileName){
+		   File fileDir=new File(filePath);
+	    	if (fileDir.isDirectory()) {
+	    		String[] children = fileDir.list();
+	    		for (int i = 0; i < children.length; i++) {
+					if(children[i].contains(fileName)){
+						return children[i];
+					}
+				}
+	    	}
+	    	return "";
+	   }
+	   
+	   
+	   
 	   /**
 	     * 获取文件长度
 	     * @param file

@@ -76,20 +76,20 @@ public class MediaResController {
 	        	FileOper.unZipFiles(new File(filePath), descDir);
 	        	//获取压缩文件中的Excel路径
 	        	//压缩文件
-	        	String zipPath = descDir+name.substring(name.lastIndexOf('\\')+1, name.lastIndexOf('.'));
-	        	String excelName = FileOper.getFileDirExcel(zipPath);
+	        	//String zipPath = descDir+name.substring(name.lastIndexOf('\\')+1, name.lastIndexOf('.'));
+	        	String excelName = FileOper.getFileDirExcel(descDir);
 	        	if(excelName !=null){
 	        		//验证模板
-	        		if(!ExcelFileUtil.fileValidate(zipPath+File.separator+excelName, "material")){
+	        		if(!ExcelFileUtil.fileValidate(descDir+File.separator+excelName, "material")){
 	        			json = getResponse(500,"","文件上传文件模板不正确");
 	        			return json;
 	        		}
-	        		List<String> errorList = mediaFileValidate.MediaMediaMaterial(zipPath+File.separator+excelName,zipPath);
+	        		List<String> errorList = mediaFileValidate.MediaMediaMaterial(descDir+File.separator+excelName,descDir);
 	            	if(errorList.size()>0){
 	     				json = getResponse(500,errorList,"文件内容不符合格式要求");
 	     				return json;
 	            	}else{
-	            		flag = mediaResService.addMediaMaterial(zipPath+File.separator+excelName);
+	            		flag = mediaResService.addMediaMaterial(descDir+File.separator+excelName);
 	            	}
 	        	}
 	        }
@@ -100,6 +100,7 @@ public class MediaResController {
 	        }
 		}catch(Exception e){
 			log.error("物料提交出现错误", e);
+			e.printStackTrace();
 			return getResponse(500,"","上传失败.");
 		}
 		return json;

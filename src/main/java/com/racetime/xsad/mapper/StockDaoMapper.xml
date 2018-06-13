@@ -22,6 +22,7 @@
 		and t2.ssp_app_id = t6.id
 		and t4.pmp_resource_id = t.id
 		and t5.pmp_resource_id = t.id
+		and t3.status = '1'
 	<!-- 	and t7.ssp_adslot_id = t.ssp_adslot_id
 		and t7.adx_adslot_id = t8.adx_adslot_id -->
 		and t8.adx_app_id = t9.id
@@ -58,6 +59,7 @@
 		  and t3.id = t4.ssp_devicegroup_id
 		  and t4.id = t.ssp_adslot_id
 		  and t3.ssp_app_id = t5.id
+		  and t4.status = '1'
 		  <if test="ssp_app_id != null and ssp_app_id != ''">  
        		and t3.ssp_app_id = #{ssp_app_id}
     	 </if>
