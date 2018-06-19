@@ -358,6 +358,14 @@ public class CensusService implements ICensusService {
         for (int i = 0; i < listNum; i++) {
             line = list.get(i).toString();
             JSONObject jsonObject = JSONObject.parseObject(line);
+            String datetime = updateFormat(jsonObject.getString("create_time"));
+            String[] date = datetime.split(" ");
+
+            ptPojo.setDate_day(date[0]);
+            ptPojo.setDate_hour(date[1]);
+            bdPojo.setDate_day(date[0]);
+            bdPojo.setDate_hour(date[1]);
+
             int type = Integer.parseInt(jsonObject.get("log_type").toString());
             if (type == 3) {
                 continue;
@@ -413,10 +421,8 @@ public class CensusService implements ICensusService {
 //                if (staticMap.get(key) != null) {
                 //bd 判断是否成功，失败
                 if ("BD".equals(jsonObject.get("source_type"))) {
-                    String datetime = updateFormat(jsonObject.getString("create_time"));
-                    String[] date = datetime.split(" ");
-                    bdPojo.setDate_day(date[0]);
-                    bdPojo.setDate_hour(date[1]);
+
+
                     if (json == null || "1003".equals(json.get("code")) || "1001".equals(json.get("code"))) {
                         bdPojo.setResponse_bid_fail_num(1);
 
@@ -433,10 +439,7 @@ public class CensusService implements ICensusService {
                         }
                     }
                 } else if ("PT".equals(jsonObject.get("source_type"))) {
-                    String datetime = updateFormat(jsonObject.getString("create_time"));
-                    String[] date = datetime.split(" ");
-                    ptPojo.setDate_day(date[0]);
-                    ptPojo.setDate_hour(date[1]);
+
                     if (json == null || "1003".equals(json.get("code")) || "1001".equals(json.get("code"))) {
                         ptPojo.setResponse_bid_fail_num(1);
 
