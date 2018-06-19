@@ -51,7 +51,6 @@ public class MediaResController {
 	private MediaFileValidate mediaFileValidate;
 
 	//上传物料信息zip
-	@SuppressWarnings("finally")
 	@ResponseBody
 	@RequestMapping(value="/material", method = RequestMethod.POST)
 	public ResponseJson uploadMediaMaterialRes(@RequestParam(value="file") MultipartFile file,
@@ -77,37 +76,37 @@ public class MediaResController {
 	        	FileOper.unZipFiles(new File(filePath), descDir);
 	        	//获取压缩文件中的Excel路径
 	        	//压缩文件
-	        	String zipPath = descDir+name.substring(name.lastIndexOf('\\')+1, name.lastIndexOf('.'));
-	        	String excelName = FileOper.getFileDirExcel(zipPath);
+	        	//String zipPath = descDir+name.substring(name.lastIndexOf('\\')+1, name.lastIndexOf('.'));
+	        	String excelName = FileOper.getFileDirExcel(descDir);
 	        	if(excelName !=null){
 	        		//验证模板
-	        		if(!ExcelFileUtil.fileValidate(zipPath+File.separator+excelName, "material")){
+	        		if(!ExcelFileUtil.fileValidate(descDir+File.separator+excelName, "material")){
 	        			json = getResponse(500,"","文件上传文件模板不正确");
 	        			return json;
 	        		}
-	        		List<String> errorList = mediaFileValidate.MediaMediaMaterial(zipPath+File.separator+excelName,zipPath);
+	        		List<String> errorList = mediaFileValidate.MediaMediaMaterial(descDir+File.separator+excelName,descDir);
 	            	if(errorList.size()>0){
 	     				json = getResponse(500,errorList,"文件内容不符合格式要求");
 	     				return json;
 	            	}else{
-	            		flag = mediaResService.addMediaMaterial(zipPath+File.separator+excelName);
+	            		flag = mediaResService.addMediaMaterial(descDir+File.separator+excelName);
 	            	}
 	        	}
 	        }
-		}catch(Exception e){
-			log.error("物料提交出现错误", e);
-		}finally{
 			if(flag){
 				json = getResponse(200,"","文件上传成功.");
 	        }else{
 	        	json = getResponse(500,"","上传失败.");
 	        }
-	        return json;
+		}catch(Exception e){
+			log.error("物料提交出现错误", e);
+			e.printStackTrace();
+			return getResponse(500,"","上传失败.");
 		}
+		return json;
 	
 	}
 	
-	@SuppressWarnings("finally")
 	@ResponseBody
 	@RequestMapping(value="/rtb", method = RequestMethod.POST)
 	public ResponseJson addRTBMediaRes(@RequestParam(value="file") MultipartFile file,
@@ -135,21 +134,19 @@ public class MediaResController {
     				flag = mediaResService.addRTBFile(filePath);
     			}
         	}
-        }catch(Exception e){
-        	e.printStackTrace();
-        	log.error("上传RTB资源报错", e);
-        	
-        }finally {
         	if(flag == true){
     			json = getResponse(200,"","scucess");
         	}else{
         		json = getResponse(500,"","上传失败");
         	}
-    		return json;
-		}
-        
+        }catch(Exception e){
+        	e.printStackTrace();
+        	log.error("上传RTB资源报错", e);
+        	return getResponse(500,"","上传失败");
+        	
+        }
+        return json;
 	}
-	@SuppressWarnings("finally")
 	@ResponseBody
 	@RequestMapping(value="/pmp", method = RequestMethod.POST)
 	public ResponseJson addPMPMediaRes(@RequestParam(value="file") MultipartFile file,
@@ -181,30 +178,35 @@ public class MediaResController {
 	    				json = getResponse(500,errorList,"文件内容不符合格式要求");
 	    				return json;
 	   			 }else{
-	   				 //flag = mediaResService.addPMPFile(filePath);
+	   				   flag = mediaResService.addPMPFile(filePath);
 	   			 }
         	}
-        	
-        }catch(Exception e){
-        	e.printStackTrace();
-        	log.error("PMP导入出错", e);
-        }finally {
         	if(flag == true){
     			json = getResponse(200,"","scucess");
         	}else{
         		json = getResponse(500,"","上传失败");
         	}
-    		return json;
-		}
+        	
+        }catch(Exception e){
+        	e.printStackTrace();
+        	log.error("PMP导入出错", e);
+        	return getResponse(500,"","未知异常，请联系客服人员");
+        }
+        return json;
         
 	}
 	
 	//组装返回错误信息
 	public ResponseJson getResponse(int code,Object data,String msg){
+		String str [] = {msg};
 		ResponseJson json = new ResponseJson();
 		json.setCode(code);
-		json.setData(data);
-		json.setMsg(msg);
+		if(msg.equals("文件内容不符合格式要求")){
+			json.setData(data);
+		}else{
+			json.setData(str);
+		}
+		//json.setMsg(msg);
 		return json;
 	}
 	

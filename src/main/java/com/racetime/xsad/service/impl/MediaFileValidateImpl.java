@@ -315,7 +315,7 @@ public class MediaFileValidateImpl implements MediaFileValidate{
 					errorList.add("媒体物料备案中,第"+(i+1)+"行,未获取到物料大小");
 				}if(str[10] == ""){
 					errorList.add("媒体物料备案中,第"+(i+1)+"行,未获取到客户名称");
-				}if(str[0] != ""){
+				}if(str[0] != ""&& str[9].equals("")){
 					if(!FileOper.validateFile(descDir, str[0])){
 						errorList.add("媒体物料备案中,第"+(i+1)+"行,未在压缩包中获取到该物料");
 					}
@@ -331,7 +331,9 @@ public class MediaFileValidateImpl implements MediaFileValidate{
 					if(adslot != null){
 						//long fileSize = FileOper.getFileSize(new File(descDir+str[0]));
 						//获取该广告位最大物料大小
-						String fileExtension = str[0].substring(str[0].lastIndexOf(".")+1).toUpperCase();
+						//String fileExtension = str[0].substring(str[0].lastIndexOf(".")+1).toUpperCase();
+						String fileName = FileOper.getFileName(descDir, str[0]);
+						String fileExtension = fileName.substring(fileName.lastIndexOf(".")+1).toUpperCase();
 						long adslot_filesize = Long.parseLong(adslot.get("max_size").toString());
 						int adslot_width = Integer.parseInt(adslot.get("width").toString());
 						int adslot_heigth = Integer.parseInt(adslot.get("height").toString());
@@ -352,7 +354,7 @@ public class MediaFileValidateImpl implements MediaFileValidate{
 						if(mediaResDao.getCustomerIdByName(str[10]) == null){
 							errorList.add("媒体物料备案中,第"+(i+1)+"行,客户名称未在系统中找到");
 						}
-						if(!adslot_expand.contains(fileExtension)){
+						if(!adslot_expand.contains(fileExtension.toUpperCase())){
 							errorList.add("媒体物料备案中,第"+(i+1)+"行,该物料不符合广告位要求文件格式");
 						}
 					}else{

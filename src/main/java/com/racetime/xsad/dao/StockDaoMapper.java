@@ -14,9 +14,9 @@ public interface StockDaoMapper {
 	
 	public List<Map<String,Object>> getPmpResouceStock(Map<String,Object> map);
 	
-	public List<Map<String,Object>> getAllAppStock();
+	public List<Map<String,Object>> getAllAppStock(Map<String,Object> map);
 	
-	public Map<String,Object> getOderAppStock(Map<String,Object> map);
+	public String getOderAppStock(Map<String,Object> map);
 	
 	public int updatePmpResouceStock(Map<String,Object> list);
 	

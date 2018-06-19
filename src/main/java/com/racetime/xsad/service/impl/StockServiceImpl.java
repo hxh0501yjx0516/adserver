@@ -92,7 +92,7 @@ public class StockServiceImpl implements StockService{
 	@Override
 	public String getAppStockInfo(Map<String,Object> param) {
 		List<Map<String,Object>> json = new ArrayList<>();
-		List<Map<String,Object>> app_info = stockDaoMapper.getAllAppStock();
+		List<Map<String,Object>> app_info = stockDaoMapper.getAllAppStock(param);
 		if(app_info.size()>0){
 			for (int i = 0; i < app_info.size(); i++) {
 				//Map<String,Object> app_key = new HashMap<>();
@@ -104,7 +104,29 @@ public class StockServiceImpl implements StockService{
 				orderInfoParam.put("sdate", param.get("sdate").toString());
 				orderInfoParam.put("edate", param.get("edate").toString());
 				int remain = 0;
-				Map<String,Object> orderAppStock = stockDaoMapper.getOderAppStock(orderInfoParam);
+				orderInfoParam.put("type", "1");
+				String orderAppYDStock = stockDaoMapper.getOderAppStock(orderInfoParam);
+				orderInfoParam.put("type", "2");
+				String orderAppSDStock = stockDaoMapper.getOderAppStock(orderInfoParam);
+				if(orderAppSDStock != null){
+					appInfo.put("lock", orderAppSDStock);
+					remain += Integer.parseInt(orderAppSDStock);
+				}else{
+					appInfo.put("lock", 0);
+				}
+				if(orderAppYDStock != null){
+					appInfo.put("reserve", orderAppYDStock);
+					remain += Integer.parseInt(orderAppYDStock);
+				}else{
+					appInfo.put("reserve", 0);
+				}
+				if(remain>0){
+					appInfo.put("remain",Integer.parseInt(app_info.get(i).get("total").toString())-remain);
+				}else{
+					appInfo.put("remain", app_info.get(i).get("total"));
+				}
+				
+				/*Map<String,Object> orderAppStock = stockDaoMapper.getOderAppStock(orderInfoParam);
 				if(orderAppStock != null){
 					if(orderAppStock.get("sdnum") == null){
 						appInfo.put("lock", 0);
@@ -123,7 +145,13 @@ public class StockServiceImpl implements StockService{
 					appInfo.put("lock", 0);
 					appInfo.put("reserve", 0);
 					appInfo.put("remain", app_info.get(i).get("total"));
-				}
+				}*/
+				
+				
+				
+				
+				
+				
 				json.add(appInfo);
 			}
 			

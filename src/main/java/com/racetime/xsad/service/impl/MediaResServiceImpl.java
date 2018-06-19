@@ -48,6 +48,7 @@ import com.racetime.xsad.util.PropertiesUtil;
 
 @Service
 public class MediaResServiceImpl implements MediaResService{
+	private static final String MATERIAL_URL = "http://39.104.114.247:10001/demo/";
 	private Logger log = LoggerFactory.getLogger(MediaResServiceImpl.class);
     @Autowired 
 	private MediaResDao mediaResDao;
@@ -144,6 +145,7 @@ public class MediaResServiceImpl implements MediaResService{
 		    	return true;
 		    }
 		} catch (Exception e) {
+			log.error("添加PMP报错",e);
 			e.printStackTrace();
 			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();   
 			return false;
@@ -163,23 +165,25 @@ public class MediaResServiceImpl implements MediaResService{
 			List<Material> material = getMaterial(result.get("0"));
 			//copy file
 			for (int i = 0; i < material.size(); i++) {
-				String imageFileName = material.get(i).getName();
-				File imageFile = new File(imageFilePath+File.separator+imageFileName);
 				//System.out.println(targetDir+File.separator);
 				if(material.get(i).getMd5().equals("")){
+					String imageFileName = FileOper.getFileName(imageFilePath,material.get(i).getName());
+					File imageFile = new File(imageFilePath+File.separator+imageFileName);
 					String suffix = imageFileName.substring(imageFileName.lastIndexOf(".") + 1);
 					String md5 = MD5FileUtil.getMD5(imageFile);
 					material.get(i).setMd5(md5);
 					FileOper.copyFile(imageFile,targetDir+File.separator+md5+"."+suffix);
-					material.get(i).setMaterial_url(md5+suffix);
-				}else{
-					FileOper.copyFile(imageFile,targetDir+File.separator+imageFileName);
+					material.get(i).setMaterial_url(MATERIAL_URL+md5+suffix);
 				}
+				/*else{
+					FileOper.copyFile(imageFile,targetDir+File.separator+imageFileName);
+				}*/
 			}
 			if(material.size()>0)
 			mediaResDao.insertMaterial(material);
 			return true;
 		} catch (Exception e) {
+			log.error("添加物料报错",e);
 			e.printStackTrace();
 			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
 			return false;
